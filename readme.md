@@ -4,4 +4,5 @@
 ### 3. 작업내용 Pull requests에 올리고 ~merge는 하지 말기
 
 ## Test용 Todo
-자기이니셜로 브랜치를 따로 만들고 Todo 아래에 본인 이름 적은 후 Pull request 올려놓기
+닉네임/이름 으로 브랜치를 따로 만들고 Todo 아래에 본인 이름 적은 후 Pull request 올려놓기
+[] 지유진
