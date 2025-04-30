@@ -1,0 +1,19 @@
+name: Create Labels
+
+on:
+  push:
+    paths:
+      - .github/labels.yml
+
+jobs:
+  sync-labels:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 레포지토리 체크아웃
+        uses: actions/checkout@v3
+
+      - name: 라벨 동기화
+        uses: crazy-max/ghaction-github-labeler@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          yaml_file: .github/labels.yml
