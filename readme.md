@@ -1,54 +1,39 @@
-# React + TypeScript + Vite
+# 📌 프로젝트명: SMP
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+> 지역 기반 정보 공유 및 채팅 서비스 (React + Kakao Map API)
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🔍 소개
 
-## Expanding the ESLint configuration
+**SMP**는 사용자의 위치 기반으로 지역 정보를 공유하고,  
+실시간 채팅을 통해 소통할 수 있는 커뮤니티 플랫폼입니다.  
+비 오는 날 잠깐 비추는 햇살처럼, 일상 속 따뜻한 연결을 제공합니다.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+---
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+## 🛠️ 주요 기능
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+- 📍 **카카오 맵 기반 위치 검색**
+- 🧵 **동네 채팅방 생성 및 참여**
+- 💬 **실시간 채팅 기능 (socket.io 예정)**
+- 📝 **게시글 및 댓글 기능**
+- 📱 **반응형 디자인**
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+---
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+## 📁 폴더 구조
+
+```bash
+WEB_A/
+├── public/
+├── src/
+│   ├── components/
+│   ├── pages/
+│   ├── hooks/
+│   ├── api/
+│   └── App.tsx
+├── .env
+├── package.json
+└── README.md
 ```
