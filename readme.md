@@ -1,28 +1,54 @@
-## 💗WEB_A 프론트엔드 작업규칙
+# React + TypeScript + Vite
 
-### 1. 이슈에 본인 할당된 업무하기
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-### 2. 작업은 따로 브랜치를 만들어서 하기
+Currently, two official plugins are available:
 
-### 3. 작업내용 Pull requests에 올리고 ~merge는 하지 말기
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-## 🔥 Git Commit Convention (커밋 규칙)
+## Expanding the ESLint configuration
 
-효율적인 협업을 위해 다음과 같은 커밋 메시지 규칙을 사용합니다.
+If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
 
-| 커밋 타입     | 설명                           |
-| ------------- | ------------------------------ |
-| 🎉 `FEAT`     | 새로운 기능 추가               |
-| 🐛 `FIX`      | 버그 및 오류 수정              |
-| 🛠 `CHORE`     | 코드 수정, 내부 파일 수정      |
-| 📝 `DOCS`     | 문서 수정 (README 등)          |
-| 🔄 `REFACTOR` | 코드 리팩토링 (기능 변경 없음) |
-| 🧪 `TEST`     | 테스트 코드 추가 및 수정       |
+```js
+export default tseslint.config({
+  extends: [
+    // Remove ...tseslint.configs.recommended and replace with this
+    ...tseslint.configs.recommendedTypeChecked,
+    // Alternatively, use this for stricter rules
+    ...tseslint.configs.strictTypeChecked,
+    // Optionally, add this for stylistic rules
+    ...tseslint.configs.stylisticTypeChecked,
+  ],
+  languageOptions: {
+    // other options...
+    parserOptions: {
+      project: ['./tsconfig.node.json', './tsconfig.app.json'],
+      tsconfigRootDir: import.meta.dirname,
+    },
+  },
+})
+```
 
-## Test용 Todo
+You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
 
-닉네임/이름 으로 브랜치를 따로 만들고 Todo 아래에 본인 이름 적은 후 Pull request 올려놓기
+```js
+// eslint.config.js
+import reactX from 'eslint-plugin-react-x'
+import reactDom from 'eslint-plugin-react-dom'
 
-- [ ] 지유진
-- [ ] 박은지
-- [ ] 장희정
+export default tseslint.config({
+  plugins: {
+    // Add the react-x and react-dom plugins
+    'react-x': reactX,
+    'react-dom': reactDom,
+  },
+  rules: {
+    // other rules...
+    // Enable its recommended typescript rules
+    ...reactX.configs['recommended-typescript'].rules,
+    ...reactDom.configs.recommended.rules,
+  },
+})
+```
