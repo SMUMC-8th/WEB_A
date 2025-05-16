@@ -1,8 +1,9 @@
 import { Outlet } from 'react-router-dom';
 import Navbar from '../components/Navbar';
+
 const Layout = () => {
   return (
-    <div className="relative pt-[66px]">
+    <div className="relative w-full h-[calc(100vh-66px)] overflow-hidden">
       <Outlet />
       <Navbar />
     </div>
