@@ -3,7 +3,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import Layout from './layout/Layout';
 import Map from './pages/Map';
 // import Chat from './pages/Chat';
-import SendBirdChat from './pages/SendBirdChat';
+// import SendBirdChat from './pages/SendBirdChat';
 import Feed from './pages/Feed';
 import ChatApp from './pages/ChatApp';
 
