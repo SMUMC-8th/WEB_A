@@ -2,6 +2,10 @@ import './App.css';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import Layout from './layout/Layout';
 import Map from './pages/Map';
+// import Chat from './pages/Chat';
+import SendBirdChat from './pages/SendBirdChat';
+import Feed from './pages/Feed';
+import ChatApp from './pages/ChatApp';
 
 const router = createBrowserRouter([
   {
@@ -15,7 +19,7 @@ const router = createBrowserRouter([
       },
       {
         path: '/feed',
-        element: <div>피드입니다.</div>,
+        element: <Feed />,
       },
       {
         path: '/post',
@@ -23,7 +27,7 @@ const router = createBrowserRouter([
       },
       {
         path: '/chat',
-        element: <div>채팅입니다.</div>,
+        element: <ChatApp />,
       },
       {
         path: '/mypage',
