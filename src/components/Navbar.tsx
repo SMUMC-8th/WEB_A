@@ -8,7 +8,7 @@ export default function Navbar() {
     { to: '/map', icon: <FaMapMarkedAlt />, key: 'map' },
     { to: '/feed', icon: <FaHome />, key: 'feed' },
     { to: '/post', icon: <FaPlusSquare />, key: 'post' },
-    { to: '/chat', icon: <FaCommentDots />, key: 'chat' },
+    { to: '/chat', icon: <FaCommentDots />, key: 'chatlist' },
     { to: '/mypage', icon: <FaUserCircle />, key: 'mypage' },
   ];
 
