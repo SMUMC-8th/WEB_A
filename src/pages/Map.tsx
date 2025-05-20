@@ -9,10 +9,11 @@
 
 import { useRef, useState, useEffect } from 'react';
 import { Map as KakaoMap, CustomOverlayMap } from 'react-kakao-maps-sdk';
-import { Post } from '../types/post'; // 게시물 타입 정의
+// import { Post } from '../types/post'; // 게시물 타입 정의
 import PostDetail from './PostDetail'; // 상세 모달 컴포넌트
 import { AnimatePresence } from 'framer-motion'; // 모달 애니메이션 처리용
 import { useNavigate } from 'react-router-dom';
+import { Post } from '../types/Post';
 
 function Map() {
   // 카카오 지도 객체 상태 저장
@@ -42,12 +43,15 @@ function Map() {
   // 사용자의 현재 위치 요청
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
-      (pos) =>
+      (pos) => {
         setMyLocation({
           lat: pos.coords.latitude,
           lng: pos.coords.longitude,
-        }),
-      (error) => console.error('위치 가져오기 실패:', error),
+        });
+      },
+      (error) => {
+        console.error('위치 가져오기 실패:', error);
+      },
     );
   }, []);
 
@@ -68,6 +72,7 @@ function Map() {
       };
 
       const point = new kakao.maps.Point(x, y);
+
       const latlng = projection.containerPointToLatLng(point);
 
       // 롱클릭 위치로 저장
