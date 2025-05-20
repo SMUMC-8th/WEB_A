@@ -2,11 +2,12 @@
 // 게시물 상세 모달 페이지
 
 // import { postHide, postNoRecommend, postReport, postTagHide } from '../apis/postOption'; // ← API 함수 import
-import { Post } from '../types/post';
+
 import { motion, useDragControls, PanInfo } from 'framer-motion';
-import { MoreHorizontal, Heart, MessageCircle, Share, Bookmark, MapPinned } from 'lucide-react';
+import { MoreHorizontal, Heart, MessageCircle, Share, Bookmark } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import PostOptionModal from '../components/alert/PostOptionModal';
+import { Post } from '../types/Post';
 
 // 부모 컴포넌트에서 전달받을 props 정의
 interface Props {
@@ -204,7 +205,7 @@ function PostDetail({ post, onClose }: Props) {
               rel="noopener noreferrer" // 보안 및 성능 향상용 설정?
               className="flex items-center gap-1 hover:underline"
             >
-              <MapPinned className="w-4 h-4" />
+              {/* <MapPinned className="w-4 h-4" /> */}
               <span>{post.title}</span>
             </a>
           </div>
