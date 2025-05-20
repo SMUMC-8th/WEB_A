@@ -44,5 +44,4 @@ function App() {
     </SendbirdProvider>
   );
 }
-
 export default App;
