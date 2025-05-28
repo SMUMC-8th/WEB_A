@@ -18,7 +18,7 @@ export const usePost = (): UsePostReturn => {
 
   const handlePrev = () => {
     setStep(1);
-    navigate('/post');
+    navigate('/map');
   };
 
   return {

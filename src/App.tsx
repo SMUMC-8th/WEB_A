@@ -8,6 +8,9 @@ import '@sendbird/uikit-react/dist/index.css';
 import { SendbirdProvider } from '@sendbird/uikit-react/SendbirdProvider';
 import ChatApp from './pages/ChatApp';
 import ChatListPage from './pages/ChatListPage';
+import Post from './pages/post';
+import { PostWrite } from './components/post/PostWrite';
+import Location from './pages/location';
 
 const myColorSet = {
   '--sendbird-light-primary-500': '#00487c',
@@ -25,11 +28,22 @@ const router = createBrowserRouter([
     children: [
       { path: 'map', element: <Map /> },
       { path: 'feed', element: <Feed /> },
-      { path: 'post', element: <div>게시글 작성하기입니다.</div> },
-      { path: 'chat', element: <ChatListPage /> }, // 채널 목록 페이지
-      { path: 'chat/:channelUrl', element: <ChatApp /> }, // 선택된 채팅방 페이지
+      { path: 'chat', element: <ChatListPage /> },
+      { path: 'chat/:channelUrl', element: <ChatApp /> },
       { path: 'mypage', element: <div>마이페이지입니다.</div> },
     ],
+  },
+  {
+    path: '/post',
+    element: <Post />,
+  },
+  {
+    path: '/post/write',
+    element: <PostWrite />,
+  },
+  {
+    path: '/location',
+    element: <Location />,
   },
 ]);
 

@@ -124,8 +124,8 @@ export const PostWrite = () => {
         <span className="w-8" />
       </header>
       <div className="flex-1 overflow-y-auto pb-20">
-        <div className="flex flex-col items-center px-2 py-1">
-          <div className="w-full h-[40vh] mb-8 relative">
+        <div className="flex flex-col items-start px-2">
+          <div className="w-full h-[40vh] mb-8 relative rounded-xl overflow-hidden">
             {selected.length > 0 ? (
               <>
                 <img
@@ -239,13 +239,13 @@ export const PostWrite = () => {
           </div>
 
           {error && !error.includes('태그') && (
-            <div className="px-3 mb-4 text-red-500 text-sm text-left">{error}</div>
+            <div className="px-3 text-red-500 text-sm text-left -mt-5">{error}</div>
           )}
 
           <button
             onClick={handleSubmit}
             disabled={isSubmitting}
-            className={`w-[100%] mx-auto mt-20 py-3 rounded-xl text-white font-semibold text-m shadow transition
+            className={`w-[100%] mx-auto mt-16 py-3 rounded-xl text-white font-semibold text-m shadow transition
               ${isSubmitting ? 'bg-blue-300' : 'bg-blue-400 active:bg-blue-500'}`}
           >
             {isSubmitting ? '게시 중...' : '게시'}
