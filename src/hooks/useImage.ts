@@ -4,7 +4,7 @@ interface UseImageReturn {
   images: File[];
   selected: number[];
   currentImageIndex: number;
-  fileInputRef: React.RefObject<HTMLInputElement | null>;
+  fileInputRef: React.RefObject<HTMLInputElement>;
   handleImageUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
   handleSelect: (idx: number) => void;
   handleAddImage: () => void;

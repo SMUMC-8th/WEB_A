@@ -3,7 +3,7 @@ import { Search } from 'lucide-react';
 import { MapPin } from 'lucide-react';
 export default function Header() {
   return (
-    <header className="w-full pt-[60px] bg-white shadow fixed pb-2">
+    <header className="w-full mt-[60px] bg-white shadow fixed pb-2">
       <div className="flex justify-between px-[20px]">
         <div className="flex juestify-center items-center gap-[10px]">
           <MapPin className="text-[#3273FF] font-bold" />

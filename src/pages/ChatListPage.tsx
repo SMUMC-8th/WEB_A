@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSendbirdStateContext } from '@sendbird/uikit-react';
 import { GroupChannel } from '@sendbird/chat/groupChannel';
 import { useNavigate } from 'react-router-dom';
