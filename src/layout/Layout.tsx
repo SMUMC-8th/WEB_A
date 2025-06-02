@@ -1,14 +1,13 @@
-import { Outlet, useLocation } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 import Navbar from '../components/Navbar';
+import Header from '../components/Header';
 
 const Layout = () => {
-  const location = useLocation();
-  const hideNavbarPaths = ['/login', '/signup']; // 푸터 숨기고 싶은 경로
-
   return (
-    <div className="relative pt-[66px]">
+    <div>
+      <Header />
       <Outlet />
-      {!hideNavbarPaths.includes(location.pathname) && <Navbar />}
+      <Navbar />
     </div>
   );
 };

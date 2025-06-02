@@ -28,10 +28,13 @@ export default function SignUpPage() {
         maxWidth: '480px',
         margin: '0 auto',
         position: 'relative',
+        minHeight: '100vh',
+        boxSizing: 'border-box',
       }}
     >
+      {/* ← 뒤로가기 */}
       <div
-        onClick={() => navigate('/login')}
+        onClick={() => navigate(-1)}
         style={{
           position: 'absolute',
           top: '10px',
@@ -45,22 +48,23 @@ export default function SignUpPage() {
         ←
       </div>
 
+      {/* 타이틀 */}
       <h1
         style={{
           fontSize: '24px',
           fontWeight: 700,
-          paddingTop: '0px',
-          marginTop: '-10px',
-          marginBottom: '60px',
+          marginTop: '60px',
+          marginBottom: '40px',
           textAlign: 'center',
         }}
       >
         <span style={{ color: '#297FB8' }}>SMP</span> 회원가입
       </h1>
 
+      {/* 아이디 입력 */}
       <div style={{ marginBottom: '24px' }}>
         <label style={labelStyle}>아이디</label>
-        <div style={{ display: 'flex', gap: '8px' }}>
+        <div style={{ display: 'flex', gap: '10px' }}>
           <input
             type="text"
             placeholder="아이디 입력"
@@ -76,7 +80,7 @@ export default function SignUpPage() {
                 ? isAvailable
                   ? '2px solid #297FB8'
                   : '2px solid red'
-                : '1px solid #ccc',
+                : '1.5px solid #ccc',
               color: isChecked && !isAvailable ? 'red' : 'inherit',
             }}
           />
@@ -106,6 +110,7 @@ export default function SignUpPage() {
         {!isChecked && <p style={guideStyle}>아이디는 6~12자의 영문, 숫자만 사용 가능합니다.</p>}
       </div>
 
+      {/* 비밀번호 */}
       <div style={{ marginBottom: '24px' }}>
         <label style={labelStyle}>비밀번호</label>
         <input
@@ -116,7 +121,7 @@ export default function SignUpPage() {
           style={{
             ...inputStyle,
             borderBottom:
-              password.length > 0 && !isPasswordLengthValid ? '2px solid red' : '1px solid #ccc',
+              password.length > 0 && !isPasswordLengthValid ? '2px solid red' : '1.5px solid #ccc',
             color: password.length > 0 && !isPasswordLengthValid ? 'red' : 'inherit',
           }}
         />
@@ -127,17 +132,27 @@ export default function SignUpPage() {
         )}
       </div>
 
+      {/* 비밀번호 확인 */}
       <div style={{ marginBottom: '40px' }}>
+        <label style={labelStyle}>비밀번호 확인</label>
         <input
           type="password"
           placeholder="비밀번호 재입력"
           value={passwordConfirm}
           onChange={(e) => setPasswordConfirm(e.target.value)}
-          style={inputStyle}
+          style={{
+            ...inputStyle,
+            borderBottom:
+              passwordConfirm.length > 0 && !isPasswordMatch ? '2px solid red' : '1.5px solid #ccc',
+            color: passwordConfirm.length > 0 && !isPasswordMatch ? 'red' : 'inherit',
+          }}
         />
+        {passwordConfirm.length > 0 && !isPasswordMatch && (
+          <p style={{ ...guideStyle, color: 'red' }}>비밀번호가 일치하지 않습니다.</p>
+        )}
       </div>
 
-      {/* ✅ 확인 버튼 클릭 시 약관 동의 페이지로 이동 */}
+      {/* 확인 버튼 */}
       <button
         style={{
           ...confirmButtonStyle,
@@ -158,6 +173,7 @@ export default function SignUpPage() {
   );
 }
 
+// 공통 스타일 정의
 const labelStyle = {
   fontSize: '14px',
   fontWeight: 600,
@@ -170,7 +186,6 @@ const inputStyle = {
   width: '100%',
   padding: '10px 14px',
   border: 'none',
-  borderBottom: '1px solid #ccc',
   backgroundColor: 'transparent',
   fontSize: '16px',
   outline: 'none',
@@ -192,6 +207,7 @@ const guideStyle = {
   fontSize: '12px',
   color: '#666',
   marginTop: '6px',
+  paddingLeft: '2px',
 };
 
 const confirmButtonStyle = {

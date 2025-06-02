@@ -13,8 +13,12 @@ export default function ProfilePhotoPage() {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const url = URL.createObjectURL(file); // 임시 URL 생성
-      setPreviewUrl(url);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64data = reader.result as string;
+        setPreviewUrl(base64data);
+      };
+      reader.readAsDataURL(file); // Base64로 변환
     }
   };
 
