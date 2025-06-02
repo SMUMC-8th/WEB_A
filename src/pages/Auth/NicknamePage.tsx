@@ -7,19 +7,20 @@ export default function NicknamePage() {
   const [nickname, setNickname] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const isInvalid = nickname.length > 0 && (nickname.length < 2 || nickname.length > 8);
+  // 👉 닉네임 길이 검증: 2~8자 (빈 문자열은 유효하지 않음)
+  const isValid = nickname.trim().length >= 2 && nickname.trim().length <= 8;
 
   const handleCheckDuplicate = () => {
-    if (!isInvalid && nickname.trim() !== '') {
+    if (isValid) {
       setIsModalOpen(true);
     }
   };
 
   const handleConfirm = () => {
     console.log(`"${nickname}" 닉네임 선택됨`);
-    localStorage.setItem('nickname', nickname); //  닉네임 저장
+    localStorage.setItem('nickname', nickname.trim()); // 닉네임 저장
     setIsModalOpen(false);
-    navigate('/profilephoto'); // 로그인 완료  페이지 이동
+    navigate('/profilephoto'); // 다음 페이지로 이동
   };
 
   return (
@@ -70,10 +71,10 @@ export default function NicknamePage() {
             flex: 1,
             padding: '10px 14px',
             border: 'none',
-            borderBottom: isInvalid ? '1.5px solid red' : '1.5px solid #ccc',
+            borderBottom: !isValid && nickname ? '1.5px solid red' : '1.5px solid #ccc',
             fontSize: '16px',
             outline: 'none',
-            color: isInvalid ? 'red' : 'inherit',
+            color: !isValid && nickname ? 'red' : 'inherit',
           }}
         />
         <button
@@ -92,13 +93,13 @@ export default function NicknamePage() {
         </button>
       </div>
 
-      {isInvalid && (
+      {!isValid && nickname && (
         <p style={{ color: 'red', fontSize: '13px', marginTop: '6px', paddingLeft: '2px' }}>
           닉네임은 2~8자 이내여야 합니다.
         </p>
       )}
 
-      {/*  공용 팝업 컴포넌트 사용 */}
+      {/* 공용 팝업 컴포넌트 */}
       <BottomConfirmModal
         isOpen={isModalOpen}
         onConfirm={handleConfirm}

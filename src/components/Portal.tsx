@@ -1,19 +1,16 @@
-// src/components/Portal.tsx
-import { createPortal } from 'react-dom';
-import { ReactNode, useEffect, useState } from 'react';
+import ReactDOM from 'react-dom';
 
-interface Props {
-  children: ReactNode;
-}
+const Portal = ({ children }: { children: React.ReactNode }) => {
+  let modalRoot = document.getElementById('modal-root');
 
-export default function Portal({ children }: Props) {
-  const [mounted, setMounted] = useState(false);
+  //  없으면 생성해서 body에 append
+  if (!modalRoot) {
+    modalRoot = document.createElement('div');
+    modalRoot.id = 'modal-root';
+    document.body.appendChild(modalRoot);
+  }
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  return ReactDOM.createPortal(children, modalRoot);
+};
 
-  if (!mounted) return null;
-
-  return createPortal(children, document.body);
-}
+export default Portal;
