@@ -6,9 +6,9 @@ export default defineConfig({
   plugins: [tailwindcss()],
   server: {
     hmr: {
-      protocol: 'ws', // WebSocket 사용
-      host: 'localhost', // 호스트를 localhost로 설정
-      port: 5173, // Vite 개발 서버의 포트 번호
+      protocol: 'ws',
+      host: 'localhost',
+      port: 5173,
     },
   },
 });

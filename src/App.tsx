@@ -2,15 +2,26 @@
 import './App.css';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import Layout from './layout/Layout';
-import Map from './pages/Map';
+import LoginPage from './pages/Auth/LoginPage';
+import SignUpPage from './pages/Auth/SignUpPage';
+import AgreementPage from './pages/Auth/AgreementPage';
+import NicknamePage from './pages/Auth/NicknamePage';
+import MyPage from './pages/Auth/MyPage'; //
+import LoginCompletePage from './pages/Auth/LoginCompletePage';
+import PasswordPage from './pages/Auth/PasswordPage';
+import PrivacyPage from './pages/Auth/PrivacyPage';
+import LogoutPage from './pages/Auth/Logout';
+import WithdrawPage from './pages/Auth/WithdrawPage';
+import ProfilePhotoPage from './pages/Auth/ProfilePhotoPage';
 import Feed from './pages/Feed';
+import ChatApp from './pages/ChatApp';
+import Map from './pages/Map';
 import '@sendbird/uikit-react/dist/index.css';
 import { SendbirdProvider } from '@sendbird/uikit-react/SendbirdProvider';
-import ChatApp from './pages/ChatApp';
-import ChatListPage from './pages/ChatListPage';
+import Location from './pages/location';
 import Post from './pages/post';
 import { PostWrite } from './components/post/PostWrite';
-import Location from './pages/location';
+import ChatListPage from './pages/ChatListPage';
 
 const myColorSet = {
   '--sendbird-light-primary-500': '#00487c',
@@ -21,6 +32,7 @@ const myColorSet = {
 };
 
 const router = createBrowserRouter([
+  //  Layout이 적용되어야 하는 내부 페이지들
   {
     path: '/',
     element: <Layout />,
@@ -28,23 +40,28 @@ const router = createBrowserRouter([
     children: [
       { path: 'map', element: <Map /> },
       { path: 'feed', element: <Feed /> },
+
       { path: 'chat', element: <ChatListPage /> },
       { path: 'chat/:channelUrl', element: <ChatApp /> },
-      { path: 'mypage', element: <div>마이페이지입니다.</div> },
+      { path: 'mypage', element: <MyPage /> },
+      { path: 'location', element: <Location /> },
     ],
   },
-  {
-    path: '/post',
-    element: <Post />,
-  },
-  {
-    path: '/post/write',
-    element: <PostWrite />,
-  },
-  {
-    path: '/location',
-    element: <Location />,
-  },
+
+  //  Layout 없이 렌더링되는 페이지들
+  { path: '/login', element: <LoginPage /> },
+  { path: '/signup', element: <SignUpPage /> },
+  { path: '/agreement', element: <AgreementPage /> },
+  { path: '/nickname', element: <NicknamePage /> },
+  { path: '/profilephoto', element: <ProfilePhotoPage /> },
+  { path: '/logincomplete', element: <LoginCompletePage /> },
+  { path: '/password', element: <PasswordPage /> },
+  { path: '/privacy', element: <PrivacyPage /> },
+  { path: '/logout', element: <LogoutPage /> },
+  { path: '/withdraw', element: <WithdrawPage /> },
+  { path: 'post/write', element: <PostWrite /> },
+  { path: '/location', element: <Location /> },
+  { path: 'post', element: <Post /> },
 ]);
 
 function App() {
@@ -58,4 +75,5 @@ function App() {
     </SendbirdProvider>
   );
 }
+
 export default App;

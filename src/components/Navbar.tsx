@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { House, MessagesSquare, UserRound, CirclePlus, Newspaper } from 'lucide-react';
+
 export default function Navbar() {
   const location = useLocation();
 
@@ -7,7 +8,7 @@ export default function Navbar() {
     { to: '/map', icon: <House size={28} />, key: 'map' },
     { to: '/feed', icon: <Newspaper size={28} />, key: 'feed' },
     { to: '/post', icon: <CirclePlus size={28} />, key: 'post' },
-    { to: '/chat', icon: <MessagesSquare size={28} />, key: 'chatlist' },
+    { to: '/chat', icon: <MessagesSquare size={28} />, key: 'chat' },
     { to: '/mypage', icon: <UserRound size={28} />, key: 'mypage' },
   ];
 
