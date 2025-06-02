@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { FaRegClipboard, FaClock, FaBookmark, FaHeart } from 'react-icons/fa';
 import { FiSearch, FiSettings } from 'react-icons/fi';
-import SettingsOptionModal from '../components/popup/SettingsOptionModal';
+import SettingsOptionModal from '../../components/popup/SettingsOptionModal';
 
 export default function MyPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);

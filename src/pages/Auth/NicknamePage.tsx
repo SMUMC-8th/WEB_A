@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import BottomConfirmModal from '../components/popup/BottomConfirmModal';
+import BottomConfirmModal from '../../components/popup/BottomConfirmModal';
 
 export default function NicknamePage() {
   const navigate = useNavigate();
@@ -19,7 +19,7 @@ export default function NicknamePage() {
     console.log(`"${nickname}" 닉네임 선택됨`);
     localStorage.setItem('nickname', nickname); //  닉네임 저장
     setIsModalOpen(false);
-    navigate('/logincomplete'); // 로그인 완료  페이지 이동
+    navigate('/profilephoto'); // 로그인 완료  페이지 이동
   };
 
   return (

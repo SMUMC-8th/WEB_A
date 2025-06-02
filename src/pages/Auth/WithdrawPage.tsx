@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import BottomConfirmModal from '../components/popup/BottomConfirmModal';
+import BottomConfirmModal from '../../components/popup/BottomConfirmModal';
 
 export default function WithdrawPage() {
   const navigate = useNavigate();
@@ -12,7 +12,7 @@ export default function WithdrawPage() {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [passwordError, setPasswordError] = useState(false);
 
-  const [showToast, setShowToast] = useState(false); // ✅ 회색 알림용
+  const [showToast, setShowToast] = useState(false); //  회색 알림용
 
   const handleWithdrawConfirm = () => {
     // 모든 유저 정보 삭제

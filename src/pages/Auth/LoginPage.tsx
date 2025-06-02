@@ -1,6 +1,6 @@
-import Header from '../components/Header';
-import LoginForm from '../components/LoginForm';
-import LoginFooter from '../components/LoginFooter';
+import Header from '../../components/Header';
+import LoginForm from '../../components/LoginForm';
+import LoginFooter from '../../components/LoginFooter';
 
 export default function LoginPage() {
   return (

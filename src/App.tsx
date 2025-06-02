@@ -2,17 +2,18 @@
 import './App.css';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import Layout from './layout/Layout';
-import Map from './pages/Map';
-import LoginPage from './pages/LoginPage';
-import SignUpPage from './pages/SignUpPage';
-import AgreementPage from './pages/AgreementPage';
-import NicknamePage from './pages/NicknamePage';
-import MyPage from './pages/MyPage'; //
-import LoginCompletePage from './pages/LoginCompletePage';
-import PasswordPage from './pages/PasswordPage';
-import PrivacyPage from './pages/PrivacyPage';
-import LogoutPage from './pages/Logout';
-import WithdrawPage from './pages/WithdrawPage';
+import Map from './pages/Auth/Map';
+import LoginPage from './pages/Auth/LoginPage';
+import SignUpPage from './pages/Auth/SignUpPage';
+import AgreementPage from './pages/Auth/AgreementPage';
+import NicknamePage from './pages/Auth/NicknamePage';
+import MyPage from './pages/Auth/MyPage'; //
+import LoginCompletePage from './pages/Auth/LoginCompletePage';
+import PasswordPage from './pages/Auth/PasswordPage';
+import PrivacyPage from './pages/Auth/PrivacyPage';
+import LogoutPage from './pages/Auth/Logout';
+import WithdrawPage from './pages/Auth/WithdrawPage';
+import ProfilePhotoPage from './pages/Auth/ProfilePhotoPage';
 
 const router = createBrowserRouter([
   {
@@ -39,6 +40,7 @@ const router = createBrowserRouter([
   { path: '/privacy', element: <PrivacyPage /> },
   { path: '/logout', element: <LogoutPage /> },
   { path: '/withdraw', element: <WithdrawPage /> },
+  { path: '/profilephoto', element: <ProfilePhotoPage /> },
 ]);
 
 function App() {
