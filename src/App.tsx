@@ -8,9 +8,9 @@ import '@sendbird/uikit-react/dist/index.css';
 import { SendbirdProvider } from '@sendbird/uikit-react/SendbirdProvider';
 import ChatApp from './pages/ChatApp';
 import ChatListPage from './pages/ChatListPage';
-import Post from './pages/post';
+import Post from './pages/Post';
 import { PostWrite } from './components/post/PostWrite';
-import Location from './pages/location';
+import Location from './pages/Location';
 
 const myColorSet = {
   '--sendbird-light-primary-500': '#00487c',

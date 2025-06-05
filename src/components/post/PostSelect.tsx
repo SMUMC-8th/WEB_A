@@ -45,6 +45,10 @@ export const PostSelect = () => {
             src={URL.createObjectURL(images[selected[currentImageIndex]])}
             alt="선택된 이미지"
             className="w-full h-full object-cover"
+            onLoad={(e) => {
+              // 이미지 로드 완료 후 URL 해제
+              URL.revokeObjectURL(e.currentTarget.src);
+            }}
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-gray-100">
@@ -107,6 +111,10 @@ export const PostSelect = () => {
                     isSelected ? 'border-2 border-blue-500' : ''
                   }`}
                   onClick={() => handleSelect(idx)}
+                  onLoad={(e) => {
+                    // 이미지 로드 완료 후 URL 해제
+                    URL.revokeObjectURL(e.currentTarget.src);
+                  }}
                 />
                 {isSelected && (
                   <span className="absolute top-2 right-2 bg-blue-500 text-white text-xs font-medium rounded-full w-6 h-6 flex items-center justify-center">
