@@ -11,6 +11,7 @@ import ChatListPage from './pages/ChatListPage';
 import Post from './pages/Post';
 import { PostWrite } from './components/post/PostWrite';
 import Location from './pages/Location';
+import { PostProvider } from './contexts/PostContext';
 
 const myColorSet = {
   '--sendbird-light-primary-500': '#00487c',
@@ -49,13 +50,16 @@ const router = createBrowserRouter([
 
 function App() {
   return (
-    <SendbirdProvider
-      appId="B73D82D8-F243-43E5-9379-FAFB5F1FC574"
-      userId="1234"
-      colorSet={myColorSet}
-    >
-      <RouterProvider router={router} />
-    </SendbirdProvider>
+    <PostProvider>
+      <SendbirdProvider
+        appId="B73D82D8-F243-43E5-9379-FAFB5F1FC574"
+        userId="1234"
+        colorSet={myColorSet}
+      >
+        <RouterProvider router={router} />
+      </SendbirdProvider>
+    </PostProvider>
   );
 }
+
 export default App;

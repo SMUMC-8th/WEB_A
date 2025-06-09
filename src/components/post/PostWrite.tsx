@@ -1,26 +1,9 @@
 import { useState, useCallback, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { useImage } from '../../hooks/useImage';
 import { useTag } from '../../hooks/useTag';
 import { usePost } from '../../hooks/usePost';
-
-interface PostResponse {
-  isSuccess: boolean;
-  code: string;
-  message: string;
-  result: {
-    postId?: number;
-    placeId?: number;
-    createdAt?: string;
-    tagName?: string;
-    latitude?: string;
-    longitude?: string;
-    placeName?: string;
-    content?: string;
-  };
-}
 
 export const PostWrite = () => {
   const [description, setDescription] = useState('');
@@ -37,7 +20,7 @@ export const PostWrite = () => {
 
   const { images, selected, currentImageIndex, handlePrevImage, handleNextImage } = useImage();
   const { tags, handleAddTag, handleRemoveTag, error: tagError } = useTag();
-  const { handlePrev, validatePost, validateServerResponse } = usePost();
+  const { handlePrev, validatePost, submitPost } = usePost();
 
   useEffect(() => {
     const savedLocation = localStorage.getItem('selectedLocation');
@@ -50,6 +33,14 @@ export const PostWrite = () => {
       }
     }
   }, []);
+
+  // 이미지가 없을 때 위치 정보 초기화
+  useEffect(() => {
+    if (selected.length === 0) {
+      setSelectedLocation(null);
+      localStorage.removeItem('selectedLocation');
+    }
+  }, [selected.length]);
 
   const handleSubmit = useCallback(async () => {
     try {
@@ -66,53 +57,32 @@ export const PostWrite = () => {
       const formData = new FormData();
 
       // 이미지 추가
-      selected.forEach((index, i) => {
-        formData.append(`image${i + 1}`, images[index]);
+      selected.forEach((index) => {
+        formData.append('image', images[index]);
       });
 
       // 게시물 데이터 추가
-      formData.append(
-        'postUpload',
-        JSON.stringify({
-          latitude: selectedLocation?.latitude,
-          longitude: selectedLocation?.longitude,
-          placeName: selectedLocation?.placeName,
-          tags: tags.map((tag) => `#${tag}`),
-          content: description,
-          isPrivate: false,
-        }),
+      const postContent = {
+        latitude: selectedLocation?.latitude,
+        longitude: selectedLocation?.longitude,
+        placeName: selectedLocation?.placeName,
+        addressName: selectedLocation?.address,
+        roadAddressName: selectedLocation?.address,
+        tags: tags.map((tag) => `#${tag}`),
+        content: description,
+      };
+
+      formData.append('postContent', JSON.stringify(postContent));
+
+      await submitPost(
+        formData,
+        () => navigate('/'),
+        (error) => setError(error),
       );
-
-      const response = await axios.post<PostResponse>('/api/posts', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-
-      if (response.data.isSuccess) {
-        navigate('/');
-      } else {
-        const serverError = validateServerResponse(response.data);
-        if (serverError) {
-          setError(serverError);
-        }
-      }
-    } catch (error) {
-      console.error('Error creating post:', error);
-      setError('게시물 생성 중 오류가 발생했습니다.');
     } finally {
       setIsSubmitting(false);
     }
-  }, [
-    images,
-    selected,
-    tags,
-    description,
-    selectedLocation,
-    navigate,
-    validatePost,
-    validateServerResponse,
-  ]);
+  }, [description, selectedLocation, tags, selected, images, validatePost, submitPost, navigate]);
 
   return (
     <div className="post-page min-h-screen flex flex-col">
@@ -236,7 +206,7 @@ export const PostWrite = () => {
             {tagError && (
               <div className="w-full text-red-500 text-xs mb-3 text-left px-3">{tagError}</div>
             )}
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2 px-3">
               {tags.map((tag, index) => (
                 <div
                   key={index}

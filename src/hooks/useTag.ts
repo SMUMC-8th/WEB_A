@@ -1,3 +1,6 @@
+// 태그 관리
+// 태그 관련 에러 및 유효성 검사
+
 import { useState, useCallback } from 'react';
 
 interface UseTagReturn {
