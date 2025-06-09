@@ -1,12 +1,10 @@
+// API 요청 처리
+// 게시물 생성 관련 에러 처리 및 유효성 검사
+
 import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-interface Location {
-  placeName: string;
-  address: string;
-  latitude: number;
-  longitude: number;
-}
+import axios from 'axios';
+import { Location } from '../types';
 
 interface PostResponse {
   isSuccess: boolean;
@@ -30,6 +28,11 @@ interface UsePostReturn {
   handlePrev: () => void;
   validatePost: (description: string, selectedLocation: Location | null) => string | null;
   validateServerResponse: (response: PostResponse) => string | null;
+  submitPost: (
+    formData: FormData,
+    onSuccess: () => void,
+    onError: (error: string) => void,
+  ) => Promise<void>;
 }
 
 export const usePost = (): UsePostReturn => {
@@ -84,11 +87,37 @@ export const usePost = (): UsePostReturn => {
     return response.message || '게시물 생성에 실패했습니다.';
   }, []);
 
+  const submitPost = useCallback(
+    async (formData: FormData, onSuccess: () => void, onError: (error: string) => void) => {
+      try {
+        const response = await axios.post<PostResponse>('/api/posts', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+
+        if (response.data.isSuccess) {
+          onSuccess();
+        } else {
+          const serverError = validateServerResponse(response.data);
+          if (serverError) {
+            onError(serverError);
+          }
+        }
+      } catch (error) {
+        console.error('게시물 제출 실패:', error);
+        onError('게시물 제출에 실패했습니다. 다시 시도해주세요.');
+      }
+    },
+    [validateServerResponse],
+  );
+
   return {
     step,
     handleNext,
     handlePrev,
     validatePost,
     validateServerResponse,
+    submitPost,
   };
 };

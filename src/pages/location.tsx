@@ -40,7 +40,6 @@ export default function Location() {
   };
 
   const handleSave = () => {
-    console.log('저장 버튼 클릭됨');
     if (query.trim()) {
       console.log('검색어:', query.trim());
       localStorage.setItem(
@@ -52,7 +51,7 @@ export default function Location() {
           longitude: 0,
         }),
       );
-      console.log('localStorage에 저장됨');
+
       navigate('/post/write');
     } else {
       console.log('검색어가 비어있음');
