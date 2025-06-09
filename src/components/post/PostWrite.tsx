@@ -1,8 +1,7 @@
-import { useState, useCallback } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState, useCallback, useEffect } from 'react';
+import { ChevronLeft, ChevronRight, MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import Navbar from '../Navbar';
 import { useImage } from '../../hooks/useImage';
 import { useTag } from '../../hooks/useTag';
 import { usePost } from '../../hooks/usePost';
@@ -28,29 +27,39 @@ export const PostWrite = () => {
   const [tagInput, setTagInput] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [selectedLocation, setSelectedLocation] = useState<{
+    placeName: string;
+    address: string;
+    latitude: number;
+    longitude: number;
+  } | null>(null);
   const navigate = useNavigate();
 
   const { images, selected, currentImageIndex, handlePrevImage, handleNextImage } = useImage();
-
   const { tags, handleAddTag, handleRemoveTag, error: tagError } = useTag();
-  const { handlePrev } = usePost();
+  const { handlePrev, validatePost, validateServerResponse } = usePost();
+
+  useEffect(() => {
+    const savedLocation = localStorage.getItem('selectedLocation');
+    if (savedLocation) {
+      try {
+        const locationData = JSON.parse(savedLocation);
+        setSelectedLocation(locationData);
+      } catch (error) {
+        console.error('위치 정보 파싱 실패:', error);
+      }
+    }
+  }, []);
 
   const handleSubmit = useCallback(async () => {
     try {
       setIsSubmitting(true);
       setError(null);
 
-      // 내용 필수 입력 검증
-      if (!description.trim()) {
-        setError('내용을 입력해주세요.');
-        return;
-      }
-
-      const selectedLocation = localStorage.getItem('selectedLocation');
-      const locationData = selectedLocation ? JSON.parse(selectedLocation) : null;
-
-      if (!locationData) {
-        setError('위치를 선택해주세요.');
+      // 내용과 위치 필수 입력 검증
+      const validationError = validatePost(description, selectedLocation);
+      if (validationError) {
+        setError(validationError);
         return;
       }
 
@@ -65,9 +74,9 @@ export const PostWrite = () => {
       formData.append(
         'postUpload',
         JSON.stringify({
-          latitude: locationData.latitude,
-          longitude: locationData.longitude,
-          placeName: locationData.placeName,
+          latitude: selectedLocation?.latitude,
+          longitude: selectedLocation?.longitude,
+          placeName: selectedLocation?.placeName,
           tags: tags.map((tag) => `#${tag}`),
           content: description,
           isPrivate: false,
@@ -83,29 +92,9 @@ export const PostWrite = () => {
       if (response.data.isSuccess) {
         navigate('/');
       } else {
-        if (response.data.code === 'VALID400_0') {
-          // 위치 정보 관련 에러 처리
-          if (
-            response.data.result.latitude ||
-            response.data.result.longitude ||
-            response.data.result.placeName
-          ) {
-            setError('위치 정보를 입력해주세요.');
-          }
-          // 태그 관련 에러 처리
-          else if (response.data.result.tagName) {
-            setError(response.data.result.tagName);
-          }
-          // 내용 관련 에러 처리
-          else if (response.data.result.content) {
-            setError(response.data.result.content);
-          }
-          // 기타 유효성 검사 에러
-          else {
-            setError(response.data.message || '입력값이 올바르지 않습니다.');
-          }
-        } else {
-          setError(response.data.message || '게시물 생성에 실패했습니다.');
+        const serverError = validateServerResponse(response.data);
+        if (serverError) {
+          setError(serverError);
         }
       }
     } catch (error) {
@@ -114,7 +103,16 @@ export const PostWrite = () => {
     } finally {
       setIsSubmitting(false);
     }
-  }, [images, selected, tags, description, navigate]);
+  }, [
+    images,
+    selected,
+    tags,
+    description,
+    selectedLocation,
+    navigate,
+    validatePost,
+    validateServerResponse,
+  ]);
 
   return (
     <div className="post-page min-h-screen flex flex-col">
@@ -132,6 +130,10 @@ export const PostWrite = () => {
                   src={URL.createObjectURL(images[selected[currentImageIndex]])}
                   alt="선택된 이미지"
                   className="w-full h-full object-cover"
+                  onLoad={(e) => {
+                    // 이미지 로드 완료 후 URL 해제
+                    URL.revokeObjectURL(e.currentTarget.src);
+                  }}
                 />
                 {selected.length > 1 && (
                   <>
@@ -171,88 +173,116 @@ export const PostWrite = () => {
             )}
           </div>
 
-          <div className="w-full flex items-center mb-8">
+          <div className="w-full flex items-center mb-6 px-1">
             <span
               className={`text-m font-bold flex items-center px-3 cursor-pointer text-left`}
               onClick={() => navigate('/location')}
             >
-              {localStorage.getItem('selectedLocation')
-                ? JSON.parse(localStorage.getItem('selectedLocation')!).placeName
-                : '위치 추가'}
-              <ChevronRight className="ml-1 cursor-pointer" />
+              {selectedLocation ? (
+                <div className="flex items-center justify-between text-blue-500 text-xl">
+                  <div className="flex items-center gap-2">
+                    <MapPin size={25} className="text-blue-500" />
+                    <span>{selectedLocation.placeName}</span>
+                  </div>
+                  <ChevronRight size={25} className="text-blue-500 ml-2" />
+                </div>
+              ) : (
+                <div className="flex items-center justify-between text-gray-800">
+                  <span>위치 추가</span>
+                  <ChevronRight size={25} className="ml-2" />
+                </div>
+              )}
             </span>
           </div>
+          {selectedLocation && (
+            <input
+              type="text"
+              placeholder="상세 주소를 입력하세요"
+              className="w-[95%] mx-auto px-2 py-2 border-b-[0.5px] border-gray-300 text-sm mb-6 -mt-4 focus:outline-none focus:border-b-[0.5px]"
+              value={selectedLocation.address}
+              onChange={(e) => {
+                setSelectedLocation({
+                  ...selectedLocation,
+                  address: e.target.value,
+                });
+              }}
+            />
+          )}
+        </div>
 
-          <div className={`w-full px-3 ${tags.length > 0 ? 'mb-5' : 'mb-3'}`}>
-            <div className="flex flex-col">
-              <input
-                type="text"
-                value={tagInput}
-                onChange={(e) => setTagInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && e.currentTarget.value.trim()) {
+        <div className={`w-full px-3 ${tags.length > 0 ? 'mb-5' : 'mb-3'}`}>
+          <div className="flex flex-col">
+            <input
+              type="text"
+              value={tagInput}
+              onChange={(e) => setTagInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && e.currentTarget.value.trim()) {
+                  // 한글 입력 중인지 확인
+                  const isComposing = e.nativeEvent.isComposing;
+                  if (!isComposing) {
                     handleAddTag(e.currentTarget.value.trim());
                     setTagInput('');
                   }
-                }}
-                placeholder={tags.length < 5 ? '태그 추가...' : ''}
-                className="text-sm outline-none mb-3"
-                onFocus={(e) => {
-                  e.preventDefault();
-                  e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }}
-              />
-              {tagError && (
-                <div className="w-full text-red-500 text-xs mb-3 text-left">{tagError}</div>
-              )}
-              <div className="flex flex-wrap gap-2">
-                {tags.map((tag, index) => (
-                  <div
-                    key={index}
-                    className="bg-gray-100 px-2 py-1 rounded-xl flex items-center gap-2"
-                  >
-                    <span className="text-sm text-gray-700">{tag}</span>
-                    <button
-                      onClick={() => handleRemoveTag(tag)}
-                      className="text-gray-500 hover:text-gray-700"
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* 설명 입력 영역 */}
-          <div className="w-full px-3 mb-4">
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="설명 추가..."
-              className={`w-full outline-none text-sm resize-none px-0`}
+                }
+              }}
+              placeholder={tags.length < 5 ? '태그 추가...' : ''}
+              className="text-sm outline-none mb-3 px-3"
               onFocus={(e) => {
                 e.preventDefault();
                 e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
               }}
             />
+            {tagError && (
+              <div className="w-full text-red-500 text-xs mb-3 text-left px-3">{tagError}</div>
+            )}
+            <div className="flex flex-wrap gap-2">
+              {tags.map((tag, index) => (
+                <div
+                  key={index}
+                  className="bg-gray-100 px-2 py-1 rounded-xl flex items-center gap-2"
+                >
+                  <span className="text-sm text-gray-700">{tag}</span>
+                  <button
+                    onClick={() => handleRemoveTag(tag)}
+                    className="text-gray-500 hover:text-gray-700"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
           </div>
+        </div>
 
+        {/* 설명 입력 영역 */}
+        <div className="w-full px-3 mb-4">
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="설명 추가..."
+            className={`w-full outline-none text-sm resize-none px-3`}
+            onFocus={(e) => {
+              e.preventDefault();
+              e.target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }}
+          />
           {error && !error.includes('태그') && (
-            <div className="px-3 text-red-500 text-sm text-left -mt-5">{error}</div>
+            <div className="w-full text-red-500 text-xs mb-3 text-left px-3">{error}</div>
           )}
+        </div>
 
+        <div className="mt-30 w-full flex justify-center">
           <button
             onClick={handleSubmit}
             disabled={isSubmitting}
-            className={`w-[100%] mx-auto mt-16 py-3 rounded-xl text-white font-semibold text-m shadow transition
-              ${isSubmitting ? 'bg-blue-300' : 'bg-blue-400 active:bg-blue-500'}`}
+            className={`w-[90%] py-3 rounded-xl text-white font-semibold text-m shadow transition
+                ${isSubmitting ? 'bg-blue-300' : 'bg-blue-400 active:bg-blue-500'}`}
           >
-            {isSubmitting ? '게시 중...' : '게시'}
+            {isSubmitting ? '게시' : '게시'}
           </button>
         </div>
       </div>
-      <Navbar />
     </div>
   );
 };
