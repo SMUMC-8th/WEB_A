@@ -7,7 +7,6 @@ export default function NicknamePage() {
   const [nickname, setNickname] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // 👉 닉네임 길이 검증: 2~8자 (빈 문자열은 유효하지 않음)
   const isValid = nickname.trim().length >= 2 && nickname.trim().length <= 8;
 
   const handleCheckDuplicate = () => {
@@ -18,15 +17,16 @@ export default function NicknamePage() {
 
   const handleConfirm = () => {
     console.log(`"${nickname}" 닉네임 선택됨`);
-    localStorage.setItem('nickname', nickname.trim()); // 닉네임 저장
+    localStorage.setItem('nickname', nickname.trim());
     setIsModalOpen(false);
-    navigate('/profilephoto'); // 다음 페이지로 이동
+    navigate('/profilephoto');
   };
 
   return (
     <div
       style={{
         padding: '25px',
+        paddingTop: '180px',
         maxWidth: '480px',
         margin: '0 auto',
         position: 'relative',
@@ -50,18 +50,22 @@ export default function NicknamePage() {
         ←
       </div>
 
+      {/* 닉네임 설정 타이틀 (← 버튼과 같은 높이, 중앙 정렬) */}
       <h1
         style={{
-          fontSize: '24px',
+          position: 'absolute',
+          top: '15px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          fontSize: '20px',
           fontWeight: 700,
-          marginTop: '60px',
-          marginBottom: '40px',
-          textAlign: 'center',
+          margin: 0,
         }}
       >
         <span style={{ color: '#297FB8' }}>닉네임</span> 설정
       </h1>
 
+      {/* 닉네임 입력 영역 */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
         <input
           placeholder="닉네임을 입력해주세요."

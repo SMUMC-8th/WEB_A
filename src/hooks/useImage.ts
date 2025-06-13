@@ -1,49 +1,26 @@
-import { useState, useRef } from 'react';
+// 이미지 관련 인터페이스 관리
 
-interface UseImageReturn {
-  images: File[];
-  selected: number[];
-  currentImageIndex: number;
-  fileInputRef: React.RefObject<HTMLInputElement>;
-  handleImageUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
-  handleSelect: (idx: number) => void;
-  handleAddImage: () => void;
-  handlePrevImage: () => void;
-  handleNextImage: () => void;
-}
+import { usePost } from '../contexts/PostContext';
 
-export const useImage = (): UseImageReturn => {
-  const [images, setImages] = useState<File[]>([]);
-  const [selected, setSelected] = useState<number[]>([]);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+export const useImage = () => {
+  const context = usePost();
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(event.target.files || []);
-    setImages(files);
-    setSelected(files.map((_, index) => index));
-    setCurrentImageIndex(0);
-  };
+  if (!context) {
+    throw new Error('useImage must be used within a PostProvider');
+  }
 
-  const handleSelect = (idx: number) => {
-    if (selected.includes(idx)) {
-      setSelected(selected.filter((i) => i !== idx));
-    } else {
-      setSelected([...selected, idx]);
-    }
-  };
-
-  const handleAddImage = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handlePrevImage = () => {
-    setCurrentImageIndex((prev) => (prev > 0 ? prev - 1 : prev));
-  };
-
-  const handleNextImage = () => {
-    setCurrentImageIndex((prev) => (prev < selected.length - 1 ? prev + 1 : prev));
-  };
+  const {
+    images,
+    selected,
+    currentImageIndex,
+    fileInputRef,
+    handleImageUpload,
+    handleSelect,
+    handleAddImage,
+    handlePrevImage,
+    handleNextImage,
+    clearImages,
+  } = context;
 
   return {
     images,
@@ -55,5 +32,6 @@ export const useImage = (): UseImageReturn => {
     handleAddImage,
     handlePrevImage,
     handleNextImage,
+    clearImages,
   };
 };

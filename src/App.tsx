@@ -6,7 +6,7 @@ import LoginPage from './pages/Auth/LoginPage';
 import SignUpPage from './pages/Auth/SignUpPage';
 import AgreementPage from './pages/Auth/AgreementPage';
 import NicknamePage from './pages/Auth/NicknamePage';
-import MyPage from './pages/Auth/MyPage'; //
+import MyPage from './pages/Auth/MyPage';
 import LoginCompletePage from './pages/Auth/LoginCompletePage';
 import PasswordPage from './pages/Auth/PasswordPage';
 import PrivacyPage from './pages/Auth/PrivacyPage';
@@ -15,13 +15,14 @@ import WithdrawPage from './pages/Auth/WithdrawPage';
 import ProfilePhotoPage from './pages/Auth/ProfilePhotoPage';
 import Feed from './pages/Feed';
 import ChatApp from './pages/ChatApp';
-import Map from './pages/Map';
-import '@sendbird/uikit-react/dist/index.css';
-import { SendbirdProvider } from '@sendbird/uikit-react/SendbirdProvider';
-import Location from './pages/location';
+import ChatListPage from './pages/ChatListPage';
 import Post from './pages/post';
 import { PostWrite } from './components/post/PostWrite';
-import ChatListPage from './pages/ChatListPage';
+import Location from './pages/location'; // 대소문자 통일
+import { PostProvider } from './contexts/PostContext';
+import '@sendbird/uikit-react/dist/index.css';
+import { SendbirdProvider } from '@sendbird/uikit-react/SendbirdProvider';
+import Map from './pages/Map';
 
 const myColorSet = {
   '--sendbird-light-primary-500': '#00487c',
@@ -32,7 +33,6 @@ const myColorSet = {
 };
 
 const router = createBrowserRouter([
-  //  Layout이 적용되어야 하는 내부 페이지들
   {
     path: '/',
     element: <Layout />,
@@ -40,15 +40,12 @@ const router = createBrowserRouter([
     children: [
       { path: 'map', element: <Map /> },
       { path: 'feed', element: <Feed /> },
-
       { path: 'chat', element: <ChatListPage /> },
       { path: 'chat/:channelUrl', element: <ChatApp /> },
       { path: 'mypage', element: <MyPage /> },
       { path: 'location', element: <Location /> },
     ],
   },
-
-  //  Layout 없이 렌더링되는 페이지들
   { path: '/login', element: <LoginPage /> },
   { path: '/signup', element: <SignUpPage /> },
   { path: '/agreement', element: <AgreementPage /> },
@@ -60,19 +57,20 @@ const router = createBrowserRouter([
   { path: '/logout', element: <LogoutPage /> },
   { path: '/withdraw', element: <WithdrawPage /> },
   { path: 'post/write', element: <PostWrite /> },
-  { path: '/location', element: <Location /> },
   { path: 'post', element: <Post /> },
 ]);
 
 function App() {
   return (
-    <SendbirdProvider
-      appId="B73D82D8-F243-43E5-9379-FAFB5F1FC574"
-      userId="1234"
-      colorSet={myColorSet}
-    >
-      <RouterProvider router={router} />
-    </SendbirdProvider>
+    <PostProvider>
+      <SendbirdProvider
+        appId="B73D82D8-F243-43E5-9379-FAFB5F1FC574"
+        userId="1234"
+        colorSet={myColorSet}
+      >
+        <RouterProvider router={router} />
+      </SendbirdProvider>
+    </PostProvider>
   );
 }
 

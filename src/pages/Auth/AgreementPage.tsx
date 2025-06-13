@@ -27,7 +27,7 @@ export default function AgreementPage() {
   };
 
   const handleSubmit = () => {
-    navigate('/nickname'); // ✅ 닉네임 페이지로 이동
+    navigate('/nickname'); // 닉네임 페이지로 이동
   };
 
   return (
@@ -63,18 +63,21 @@ export default function AgreementPage() {
       {/* 제목 */}
       <h1
         style={{
-          fontSize: '24px',
+          position: 'absolute',
+          top: '15px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          fontSize: '20px',
           fontWeight: 700,
-          marginTop: '60px',
-          marginBottom: '40px',
-          textAlign: 'center',
+          margin: 0,
         }}
       >
         <span style={{ color: '#297FB8' }}>SMP</span> 약관 동의
       </h1>
 
       {/* 전체 동의 체크박스 */}
-      <div style={{ marginBottom: '30px' }}>
+      <div style={{ marginTop: '80px', marginBottom: '30px' }}>
+        {/* ⬆ marginTop 추가로 아래 전체 레이아웃도 내려가도록 조정 */}
         <label style={checkboxLabelStyle}>
           <input
             type="checkbox"
@@ -86,10 +89,17 @@ export default function AgreementPage() {
         </label>
       </div>
 
-      <hr style={{ marginBottom: '30px' }} />
+      <hr style={{ marginBottom: '50px' }} />
 
       {/* 개별 항목 체크박스 */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginBottom: '40px' }}>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '20px',
+          marginBottom: '40px',
+        }}
+      >
         <label style={checkboxLabelStyle}>
           <input
             type="checkbox"

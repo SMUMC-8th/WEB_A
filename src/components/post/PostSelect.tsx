@@ -12,7 +12,6 @@ import { usePost } from '../../hooks/usePost';
 
 export const PostSelect = () => {
   const [showModal, setShowModal] = useState(false);
-
   const {
     images,
     selected,
@@ -21,6 +20,8 @@ export const PostSelect = () => {
     handleImageUpload,
     handleSelect,
     handleAddImage,
+    handlePrevImage,
+    handleNextImage,
   } = useImage();
 
   const { handleNext } = usePost();
@@ -40,14 +41,32 @@ export const PostSelect = () => {
       </header>
 
       <section className="image-preview h-[40vh] relative">
-        {selected.length > 0 ? (
-          <img
-            src={URL.createObjectURL(images[selected[currentImageIndex]])}
-            alt="선택된 이미지"
-            className="w-full h-full object-cover"
-          />
+        {images.length > 0 ? (
+          <div className="relative h-[40vh] overflow-hidden">
+            <img
+              src={URL.createObjectURL(images[currentImageIndex])}
+              alt={`Selected ${currentImageIndex + 1}`}
+              className="w-full h-full object-cover"
+            />
+            {images.length > 1 && (
+              <>
+                <button
+                  onClick={handlePrevImage}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 p-2 text-white bg-black bg-opacity-50 rounded-full hover:bg-opacity-70"
+                >
+                  ←
+                </button>
+                <button
+                  onClick={handleNextImage}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-white bg-black bg-opacity-50 rounded-full hover:bg-opacity-70"
+                >
+                  →
+                </button>
+              </>
+            )}
+          </div>
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-gray-100">
+          <div className="w-full h-[40vh] flex items-center justify-center bg-gray-100">
             <span className="text-gray-400">이미지를 선택해주세요</span>
           </div>
         )}

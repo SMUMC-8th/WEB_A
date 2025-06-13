@@ -1,13 +1,16 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import SignupAPI from '../../services/auth';
 
 export default function SignUpPage() {
   const navigate = useNavigate();
   const [id, setId] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
+  const [nickname, setNickname] = useState('');
   const [isChecked, setIsChecked] = useState(false);
   const [isAvailable, setIsAvailable] = useState(false);
+  const [message, setMessage] = useState('');
 
   const handleCheckId = () => {
     if (!id) return;
@@ -19,12 +22,36 @@ export default function SignUpPage() {
 
   const isPasswordLengthValid = password.length >= 8 && password.length <= 12;
   const isPasswordMatch = password && passwordConfirm && password === passwordConfirm;
-  const isFormValid = isChecked && isAvailable && isPasswordMatch && isPasswordLengthValid;
+  const isFormValid =
+    isChecked && isAvailable && isPasswordMatch && isPasswordLengthValid && nickname;
+
+  const handleSubmit = async () => {
+    console.log(id, nickname, password);
+    try {
+      const formData = new FormData();
+      const jsonData = JSON.stringify({
+        loginId: id,
+        nickname: nickname,
+        password: password,
+      });
+      formData.append('SignUp', new Blob([jsonData], { type: 'application/json' }));
+
+      const result = await SignupAPI(formData);
+
+      alert('회원가입 성공 🎉');
+      console.log(result);
+      navigate('/agreement');
+    } catch (error) {
+      alert('회원가입 실패 ❌');
+      console.error('에러 응답:', error);
+    }
+  };
 
   return (
     <div
       style={{
         padding: '25px',
+        paddingTop: '170px',
         maxWidth: '480px',
         margin: '0 auto',
         position: 'relative',
@@ -32,7 +59,6 @@ export default function SignUpPage() {
         boxSizing: 'border-box',
       }}
     >
-      {/* ← 뒤로가기 */}
       <div
         onClick={() => navigate(-1)}
         style={{
@@ -48,26 +74,27 @@ export default function SignUpPage() {
         ←
       </div>
 
-      {/* 타이틀 */}
       <h1
         style={{
-          fontSize: '24px',
+          position: 'absolute',
+          top: '15px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          fontSize: '20px',
           fontWeight: 700,
-          marginTop: '60px',
-          marginBottom: '40px',
-          textAlign: 'center',
+          margin: 0,
         }}
       >
         <span style={{ color: '#297FB8' }}>SMP</span> 회원가입
       </h1>
 
-      {/* 아이디 입력 */}
-      <div style={{ marginBottom: '24px' }}>
-        <label style={labelStyle}>아이디</label>
+      {/* 아이디 */}
+      <div style={{ marginBottom: '40px' }}>
+        <label style={labelStyle}>닉네임</label>
         <div style={{ display: 'flex', gap: '10px' }}>
           <input
             type="text"
-            placeholder="아이디 입력"
+            placeholder="닉네임 입력"
             value={id}
             onChange={(e) => {
               setId(e.target.value);
@@ -97,17 +124,28 @@ export default function SignUpPage() {
           </button>
         </div>
         {isChecked && (
-          <p
-            style={{
-              ...guideStyle,
-              color: isAvailable ? '#297FB8' : 'red',
-              fontWeight: 500,
-            }}
-          >
-            {isAvailable ? '사용 가능한 아이디입니다.' : '이미 존재하는 아이디입니다.'}
+          <p style={{ ...guideStyle, color: isAvailable ? '#297FB8' : 'red', fontWeight: 500 }}>
+            {isAvailable ? '사용 가능한 닉네임입니다.' : '이미 존재하는 닉네임입니다.'}
           </p>
         )}
         {!isChecked && <p style={guideStyle}>아이디는 6~12자의 영문, 숫자만 사용 가능합니다.</p>}
+      </div>
+
+      {/* 닉네임 */}
+      <div style={{ marginBottom: '24px' }}>
+        <label style={labelStyle}>아이디</label>
+        <input
+          type="text"
+          placeholder="아이디 입력"
+          value={nickname}
+          onChange={(e) => setNickname(e.target.value)}
+          style={{
+            ...inputStyle,
+            borderBottom: nickname ? '1.5px solid #ccc' : '2px solid red',
+            color: nickname ? 'inherit' : 'red',
+          }}
+        />
+        {!nickname && <p style={{ ...guideStyle, color: 'red' }}>아이디를 입력해주세요.</p>}
       </div>
 
       {/* 비밀번호 */}
@@ -152,7 +190,6 @@ export default function SignUpPage() {
         )}
       </div>
 
-      {/* 확인 버튼 */}
       <button
         style={{
           ...confirmButtonStyle,
@@ -161,11 +198,7 @@ export default function SignUpPage() {
           cursor: isFormValid ? 'pointer' : 'default',
         }}
         disabled={!isFormValid}
-        onClick={() => {
-          if (isFormValid) {
-            navigate('/agreement');
-          }
-        }}
+        onClick={handleSubmit}
       >
         확인
       </button>
@@ -173,7 +206,7 @@ export default function SignUpPage() {
   );
 }
 
-// 공통 스타일 정의
+// 스타일 정의
 const labelStyle = {
   fontSize: '14px',
   fontWeight: 600,
