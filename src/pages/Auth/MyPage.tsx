@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { FaRegClipboard, FaClock, FaBookmark, FaHeart } from 'react-icons/fa';
 import { FiSearch, FiSettings } from 'react-icons/fi';
 import SettingsOptionModal from '../../components/popup/SettingsOptionModal';
+import api from '../../apis/api'; //
 
 export default function MyPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -13,21 +14,20 @@ export default function MyPage() {
     const fetchUserInfo = async () => {
       const token = localStorage.getItem('accessToken');
       console.log(' 저장된 토큰:', token);
+
       if (!token) {
         console.warn(' 토큰 없음. 로그인 필요');
         return;
       }
 
       try {
-        const response = await fetch('https://api-smp.shop/api/members', {
-          method: 'GET',
+        const response = await api.get('/api/members', {
           headers: {
             Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
           },
         });
 
-        const data = await response.json();
+        const data = response.data;
         console.log(' 사용자 정보 응답:', data);
 
         if (data.isSuccess && data.result) {
