@@ -1,112 +1,105 @@
-import { Ellipsis } from 'lucide-react';
-import { Heart } from 'lucide-react';
-import { MessageCircle } from 'lucide-react';
-import { MapPin } from 'lucide-react';
+// components/Feed.tsx
+import { useQuery } from '@tanstack/react-query';
+import { fetchPostsByPlaceIds, Post } from '../apis/Post';
+import { Ellipsis, Heart, MessageCircle, MapPin } from 'lucide-react';
 import CommentModal from '../components/popup/CommentModal';
-import { useState } from 'react';
 import PostOptionsModal from '../components/popup/PostOptionsMoadl';
-const posts = [
-  {
-    id: 1,
-    imageUrl: 'https://www.studiopeople.kr/common/img/default_profile.png',
-    username: '유진',
-    likes: 128,
-    caption: '🌸 오늘 날씨 너무 좋다!',
-  },
-  {
-    id: 2,
-    imageUrl: 'https://www.studiopeople.kr/common/img/default_profile.png',
-    username: 'jyujin507',
-    likes: 89,
-    caption: '🧋카페에서 작업 중',
-  },
-  {
-    id: 3,
-    imageUrl: 'https://www.studiopeople.kr/common/img/default_profile.png',
-    username: 'jyujin507',
-    likes: 89,
-    caption: '🧋카페에서 작업 중',
-  },
-  {
-    id: 4,
-    imageUrl: 'https://www.studiopeople.kr/common/img/default_profile.png',
-    username: 'jyujin507',
-    likes: 89,
-    caption: '🧋카페에서 작업 중',
-  },
-  {
-    id: 5,
-    imageUrl: 'https://www.studiopeople.kr/common/img/default_profile.png',
-    username: 'jyujin507',
-    likes: 89,
-    caption: '🧋카페에서 작업 중',
-  },
-  {
-    id: 6,
-    imageUrl: 'https://www.studiopeople.kr/common/img/default_profile.png',
-    username: 'jyujin507',
-    likes: 89,
-    caption: '🧋카페에서 작업 중',
-  },
-  //더미 데이터임 무시하십쇼
-];
+import { useState } from 'react';
 
 const Feed = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPostOptionsOpen, setIsPostOptionsOpen] = useState(false);
-  const handleOpenComments = () => {
+  const [selectedPostId, setSelectedPostId] = useState<number | null>(null);
+
+  const placeIds = [1];
+
+  const {
+    data: posts,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ['postsByPlaces', placeIds],
+    queryFn: () => fetchPostsByPlaceIds(placeIds),
+    enabled: placeIds.length > 0,
+  });
+
+  const handleOpenComments = (postId: number) => {
+    setSelectedPostId(postId);
     setIsModalOpen(true);
   };
 
-  const handleCloseComments = () => {
-    setIsModalOpen(false);
-  };
+  const handleCloseComments = () => setIsModalOpen(false);
   const handleOpenOptions = () => setIsPostOptionsOpen(true);
   const handleCloseOptions = () => setIsPostOptionsOpen(false);
 
+  if (isLoading) return <div className="pt-[100px]">로딩 중...</div>;
+  if (error) return <div className="pt-[100px]">에러가 발생했습니다</div>;
+
+  console.log('posts', posts);
+
+  if (!posts || posts.length === 0) {
+    return <div className="pt-[100px] text-center text-gray-500">게시글이 없습니다.</div>;
+  }
+
   return (
-    <div className="pt-[100px]">
-      {posts.map((post) => (
+    <div className="pt-[100px] space-y-4">
+      {posts.map((post: Post) => (
         <div
-          key={post.id}
-          className="overflow-hidden shadow-md outline-gray-300
-"
+          key={post.postId}
+          className="overflow-hidden shadow-md outline outline-1 outline-gray-200 rounded-md bg-white"
         >
-          <div className="flex items-center p-3 bg-white">
+          <div className="flex items-center p-3">
             <img
-              src="https://www.studiopeople.kr/common/img/default_profile.png"
+              src={post.profileUrl || 'https://www.studiopeople.kr/common/img/default_profile.png'}
               alt="Profile"
               className="rounded-full w-10 h-10 mr-2"
             />
             <div className="flex flex-col">
-              <span className="font-bold text-sm">{post.username}</span>
-              <span className="text-xs text-gray-500">청학동</span>
+              <span className="font-bold text-sm">{post.nickname}</span>
+              <span className="text-xs text-gray-500">{post.placeName}</span>
             </div>
             <div className="ml-auto cursor-pointer" onClick={handleOpenOptions}>
               <Ellipsis className="text-gray-500" />
             </div>
           </div>
-          <img src={post.imageUrl} alt="Post" className="w-full h-auto object-cover" />
+
+          {/* 이미지 또는 이미지 없음 텍스트 */}
+          {post.postImageUrl.length > 0 ? (
+            <img src={post.postImageUrl[0]} alt="Post" className="w-full h-auto object-cover" />
+          ) : (
+            <div className="w-full h-[200px] bg-gray-50 flex items-center justify-center text-gray-400 text-sm">
+              이미지 없음
+            </div>
+          )}
+
           <div className="p-3">
             <div className="flex items-center gap-4 text-gray-500 text-sm">
               <div className="flex items-center gap-1">
                 <Heart className="w-[20px] h-[20px]" />
-                <span>{post.likes}</span>
+                <span>{post.likeCount}</span>
               </div>
-              <div className="flex items-center gap-1">
-                <MessageCircle className="w-[20px] h-[20px]" onClick={handleOpenComments} />
-                <span>120</span>
+              <div
+                className="flex items-center gap-1 cursor-pointer"
+                onClick={() => handleOpenComments(post.postId)}
+              >
+                <MessageCircle className="w-[20px] h-[20px]" />
+                <span>{post.commentCount}</span>
               </div>
               <div className="flex items-center gap-1">
                 <MapPin className="w-[20px] h-[20px]" />
-                <span>청학동</span>
+                <span>{post.placeName}</span>
               </div>
             </div>
-            <p className="text-sm text-gray-600 mt-2">{post.caption}</p>
+            <p className="text-sm text-gray-600 mt-2">{post.content}</p>
           </div>
-        </div> //일단은 피드 나중에 컴포넌트로 빼기
+        </div>
       ))}
-      <CommentModal isOpen={isModalOpen} onClose={handleCloseComments} postId={1} />
+
+      <CommentModal
+        isOpen={isModalOpen}
+        onClose={handleCloseComments}
+        postId={selectedPostId ?? 1}
+      />
       <PostOptionsModal isOpen={isPostOptionsOpen} onClose={handleCloseOptions} />
     </div>
   );

@@ -1,6 +1,7 @@
 // src/App.tsx
 import './App.css';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Layout from './layout/Layout';
 import LoginPage from './pages/Auth/LoginPage';
 import SignUpPage from './pages/Auth/SignUpPage';
@@ -32,6 +33,8 @@ const myColorSet = {
   '--sendbird-light-primary-100': '#027bce',
 };
 
+const queryClient = new QueryClient();
+
 const router = createBrowserRouter([
   {
     path: '/',
@@ -62,15 +65,17 @@ const router = createBrowserRouter([
 
 function App() {
   return (
-    <PostProvider>
-      <SendbirdProvider
-        appId="B73D82D8-F243-43E5-9379-FAFB5F1FC574"
-        userId="1234"
-        colorSet={myColorSet}
-      >
-        <RouterProvider router={router} />
-      </SendbirdProvider>
-    </PostProvider>
+    <QueryClientProvider client={queryClient}>
+      <PostProvider>
+        <SendbirdProvider
+          appId="B73D82D8-F243-43E5-9379-FAFB5F1FC574"
+          userId="1234"
+          colorSet={myColorSet}
+        >
+          <RouterProvider router={router} />
+        </SendbirdProvider>
+      </PostProvider>
+    </QueryClientProvider>
   );
 }
 
