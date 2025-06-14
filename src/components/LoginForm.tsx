@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { loginAPI } from '../services/auth'; // 상대 경로 확인 필요
+import { loginAPI } from '../apis/auth';
 
 export default function LoginForm() {
   const [id, setId] = useState<string>('');
@@ -20,9 +20,11 @@ export default function LoginForm() {
       console.log(' 로그인 시도:', id, password);
       const result = await loginAPI(id, password);
 
+      console.log(' 로그인 API 응답 result:', result);
+
       if (result && result.accessToken) {
         localStorage.setItem('accessToken', result.accessToken);
-        localStorage.setItem('nickname', result.result.nickname); //다시 저장해야함
+        localStorage.setItem('nickname', result.nickname); //다시 저장해야함
         alert('로그인 성공 ');
         navigate('/mypage');
       } else {
