@@ -5,6 +5,13 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineConfig({
   plugins: [tailwindcss()],
   server: {
+    proxy: {
+      '/api': {
+        target: 'https://api-smp.shop',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ''),
+      },
+    },
     hmr: {
       protocol: 'ws',
       host: 'localhost',

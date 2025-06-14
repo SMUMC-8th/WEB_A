@@ -12,7 +12,6 @@ const dummyComments = new Array(30).fill(0).map((_, i) => ({
   username: `user${i + 1}`,
   content: `이건 댓글 내용 ${i + 1}번입니다.`,
 }));
-
 const CommentModal = ({ isOpen, onClose, postId }: Props) => {
   const windowHeight = typeof window !== 'undefined' ? window.innerHeight : 800;
   const initialHeight = windowHeight * 0.5;
