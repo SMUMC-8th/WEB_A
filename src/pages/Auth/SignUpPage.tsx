@@ -10,39 +10,42 @@ export default function SignUpPage() {
   const [nickname, setNickname] = useState('');
   const [isChecked, setIsChecked] = useState(false);
   const [isAvailable, setIsAvailable] = useState(false);
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState(''); // 오류 무시
 
-  const handleCheckId = () => {
-    if (!id) return;
-    const duplicatedIds = ['smugod', 'admin'];
-    const isDup = duplicatedIds.includes(id.toLowerCase());
+  const handleCheckNickname = () => {
+    if (!nickname) return;
+    const duplicatedNicknames = ['smugod', 'admin'];
+    const isDup = duplicatedNicknames.includes(nickname.toLowerCase());
     setIsChecked(true);
     setIsAvailable(!isDup);
   };
 
+  // 유효성 검사
+  const isIdLengthValid = id.length >= 6 && id.length <= 12;
+  const isIdFormatValid = /^[a-zA-Z0-9]+$/.test(id);
+  const isIdValid = isIdLengthValid && isIdFormatValid;
+
   const isPasswordLengthValid = password.length >= 8 && password.length <= 12;
   const isPasswordMatch = password && passwordConfirm && password === passwordConfirm;
+
   const isFormValid =
-    isChecked && isAvailable && isPasswordMatch && isPasswordLengthValid && nickname;
+    isChecked && isAvailable && isIdValid && isPasswordLengthValid && isPasswordMatch && nickname;
 
   const handleSubmit = async () => {
-    console.log(id, nickname, password);
     try {
       const formData = new FormData();
-      const jsonData = JSON.stringify({
+      const json = JSON.stringify({
         loginId: id,
         nickname: nickname,
         password: password,
       });
-      formData.append('SignUp', new Blob([jsonData], { type: 'application/json' }));
+      formData.append('SignUp', new Blob([json], { type: 'application/json' }));
 
-      const result = await SignupAPI(formData);
-
-      alert('회원가입 성공 🎉');
-      console.log(result);
-      navigate('/agreement');
+      await SignupAPI(formData);
+      alert('회원가입 성공');
+      navigate('/profilephoto');
     } catch (error) {
-      alert('회원가입 실패 ❌');
+      alert('회원가입 실패');
       console.error('에러 응답:', error);
     }
   };
@@ -88,16 +91,16 @@ export default function SignUpPage() {
         <span style={{ color: '#297FB8' }}>SMP</span> 회원가입
       </h1>
 
-      {/* 아이디 */}
+      {/* 닉네임 */}
       <div style={{ marginBottom: '40px' }}>
         <label style={labelStyle}>닉네임</label>
         <div style={{ display: 'flex', gap: '10px' }}>
           <input
             type="text"
             placeholder="닉네임 입력"
-            value={id}
+            value={nickname}
             onChange={(e) => {
-              setId(e.target.value);
+              setNickname(e.target.value);
               setIsChecked(false);
               setIsAvailable(false);
             }}
@@ -112,7 +115,7 @@ export default function SignUpPage() {
             }}
           />
           <button
-            onClick={handleCheckId}
+            onClick={handleCheckNickname}
             style={{
               ...checkButtonStyle,
               backgroundColor: isChecked ? '#ccc' : '#297FB8',
@@ -128,24 +131,28 @@ export default function SignUpPage() {
             {isAvailable ? '사용 가능한 닉네임입니다.' : '이미 존재하는 닉네임입니다.'}
           </p>
         )}
-        {!isChecked && <p style={guideStyle}>아이디는 6~12자의 영문, 숫자만 사용 가능합니다.</p>}
+        {!isChecked && <p style={guideStyle}>닉네임을 입력해주세요.</p>}
       </div>
 
-      {/* 닉네임 */}
+      {/* 아이디 */}
       <div style={{ marginBottom: '24px' }}>
         <label style={labelStyle}>아이디</label>
         <input
           type="text"
           placeholder="아이디 입력"
-          value={nickname}
-          onChange={(e) => setNickname(e.target.value)}
+          value={id}
+          onChange={(e) => setId(e.target.value)}
           style={{
             ...inputStyle,
-            borderBottom: nickname ? '1.5px solid #ccc' : '2px solid red',
-            color: nickname ? 'inherit' : 'red',
+            borderBottom: id.length > 0 && !isIdValid ? '2px solid red' : '1.5px solid #ccc',
+            color: id.length > 0 && !isIdValid ? 'red' : 'inherit',
           }}
         />
-        {!nickname && <p style={{ ...guideStyle, color: 'red' }}>아이디를 입력해주세요.</p>}
+        {id.length > 0 && !isIdValid && (
+          <p style={{ ...guideStyle, color: 'red' }}>
+            아이디는 6~12자의 영문, 숫자만 사용 가능합니다.
+          </p>
+        )}
       </div>
 
       {/* 비밀번호 */}

@@ -1,11 +1,14 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { loginAPI } from '../services/auth'; // 상대 경로 확인 필요
 
 export default function LoginForm() {
-  const [id, setId] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [id, setId] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [error, setError] = useState<string>('');
+  const navigate = useNavigate();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
 
     if (!id || !password) {
@@ -13,33 +16,46 @@ export default function LoginForm() {
       return;
     }
 
-    console.log('✅ 로그인 시도:', id, password);
-    setError('');
-    // 로그인 API 또는 이동 처리
+    try {
+      console.log(' 로그인 시도:', id, password);
+      const result = await loginAPI(id, password);
+
+      if (result && result.accessToken) {
+        localStorage.setItem('accessToken', result.accessToken);
+        localStorage.setItem('nickname', result.result.nickname); //다시 저장해야함
+        alert('로그인 성공 ');
+        navigate('/mypage');
+      } else {
+        throw new Error('서버 응답에 accessToken이 없습니다.');
+      }
+    } catch (err) {
+      console.error(' 로그인 실패:', err);
+      setError('아이디 또는 비밀번호가 올바르지 않습니다.');
+    }
   };
 
   return (
     <form onSubmit={handleLogin} style={{ padding: '0 20px', marginTop: '30px' }}>
-      {/* 아이디 라벨 + 입력 */}
+      {/* 아이디 입력 */}
       <div style={inputWrapperStyle}>
         <label style={labelStyle}>아이디</label>
         <input
           type="text"
           placeholder="아이디를 입력해주세요."
           value={id}
-          onChange={(e) => setId(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setId(e.target.value)}
           style={inputStyle}
         />
       </div>
 
-      {/* 비밀번호 라벨 + 입력 */}
+      {/* 비밀번호 입력 */}
       <div style={inputWrapperStyle}>
         <label style={labelStyle}>비밀번호</label>
         <input
           type="password"
           placeholder="비밀번호를 입력해주세요."
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
           style={inputStyle}
         />
       </div>
@@ -55,6 +71,7 @@ export default function LoginForm() {
   );
 }
 
+// 스타일 정의
 const inputWrapperStyle = {
   marginBottom: '8px',
 };

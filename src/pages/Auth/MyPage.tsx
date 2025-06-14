@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FaRegClipboard, FaClock, FaBookmark, FaHeart } from 'react-icons/fa';
 import { FiSearch, FiSettings } from 'react-icons/fi';
 import SettingsOptionModal from '../../components/popup/SettingsOptionModal';
@@ -6,13 +6,49 @@ import SettingsOptionModal from '../../components/popup/SettingsOptionModal';
 export default function MyPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('');
+  const [userNickname, setUserNickname] = useState('이름 없음');
+  const [profileImage, setProfileImage] = useState('/images/default-profile.png');
 
-  const userNickname = localStorage.getItem('nickname') || '이름 없음';
-  const profileImage = localStorage.getItem('profileImage') || '/images/default-profile.png';
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      const token = localStorage.getItem('accessToken');
+      console.log(' 저장된 토큰:', token);
+      if (!token) {
+        console.warn(' 토큰 없음. 로그인 필요');
+        return;
+      }
 
-  const handleTabClick = (tab: string) => {
-    setActiveTab(tab);
-  };
+      try {
+        const response = await fetch('https://api-smp.shop/api/members', {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const data = await response.json();
+        console.log(' 사용자 정보 응답:', data);
+
+        if (data.isSuccess && data.result) {
+          const nickname = data.result.nickname || '이름 없음';
+          const imageUrl = data.result.profileUrl || '/images/default-profile.png';
+
+          setUserNickname(nickname);
+          setProfileImage(imageUrl);
+
+          localStorage.setItem('nickname', nickname);
+          localStorage.setItem('profileImage', imageUrl);
+        } else {
+          console.error(' 사용자 정보 없음 또는 실패 응답:', data.message || data.code);
+        }
+      } catch (err) {
+        console.error(' 사용자 정보 가져오기 실패:', err);
+      }
+    };
+
+    fetchUserInfo();
+  }, []);
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -57,7 +93,7 @@ export default function MyPage() {
         ].map(({ icon, label }) => (
           <div
             key={label}
-            onClick={() => handleTabClick(label)}
+            onClick={() => setActiveTab(label)}
             className={`flex flex-col items-center cursor-pointer ${
               activeTab === label ? 'text-blue-500' : ''
             }`}
@@ -69,11 +105,8 @@ export default function MyPage() {
       </div>
 
       <hr className="border-t border-gray-300 mb-4" />
-
-      {/* 탭 콘텐츠 영역 */}
       {renderTabContent()}
 
-      {/* 설정 모달 */}
       <SettingsOptionModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </div>
   );
