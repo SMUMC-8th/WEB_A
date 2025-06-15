@@ -1,7 +1,9 @@
 import axios from 'axios';
 
+export const BASE_URL = 'https://api-smp.shop';
+
 const api = axios.create({
-  baseURL: 'https://api-smp.shop',
+  baseURL: BASE_URL,
   withCredentials: true,
 });
 
