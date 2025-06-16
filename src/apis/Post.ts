@@ -100,8 +100,6 @@ export const postCommentByPostId = async (postId: number, content: string) => {
 
   return response.data;
 };
-<<<<<<< Updated upstream
-=======
 
 // 댓글 관련 API 함수
 // 댓글 수정
@@ -193,4 +191,3 @@ export const setNoRecommend = async (targetMemberId: number) => {
 
   return data.result;
 };
->>>>>>> Stashed changes
