@@ -5,6 +5,7 @@ import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Location } from '../types';
+import api from '../apis/api';
 
 interface PostResponse {
   isSuccess: boolean;
@@ -90,18 +91,7 @@ export const usePost = (): UsePostReturn => {
   const submitPost = useCallback(
     async (formData: FormData, onSuccess: () => void, onError: (error: string) => void) => {
       try {
-        const token = localStorage.getItem('token');
-        if (!token) {
-          onError('로그인이 필요합니다.');
-          return;
-        }
-
-        const response = await axios.post<PostResponse>('/api/posts', formData, {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await api.post<PostResponse>('/api/posts', formData);
 
         if (response.data.isSuccess) {
           onSuccess();
