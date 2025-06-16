@@ -2,6 +2,7 @@
 import './App.css';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Navigate } from 'react-router-dom';
 import Layout from './layout/Layout';
 import LoginPage from './pages/Auth/LoginPage';
 import SignUpPage from './pages/Auth/SignUpPage';
@@ -38,6 +39,10 @@ const queryClient = new QueryClient();
 const router = createBrowserRouter([
   {
     path: '/',
+    element: <Navigate to="/login" replace />,
+  },
+  {
+    path: '/',
     element: <Layout />,
     errorElement: <div>404 에러 발생 관리자에게 문의하세요!</div>,
     children: [
@@ -46,7 +51,6 @@ const router = createBrowserRouter([
       { path: 'chat', element: <ChatListPage /> },
       { path: 'chat/:channelUrl', element: <ChatApp /> },
       { path: 'mypage', element: <MyPage /> },
-      { path: 'location', element: <Location /> },
     ],
   },
   { path: '/login', element: <LoginPage /> },
@@ -61,6 +65,7 @@ const router = createBrowserRouter([
   { path: '/withdraw', element: <WithdrawPage /> },
   { path: 'post/write', element: <PostWrite /> },
   { path: 'post', element: <Post /> },
+  { path: 'location', element: <Location /> },
 ]);
 
 function App() {
