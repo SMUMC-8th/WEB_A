@@ -5,14 +5,14 @@ import { motion, useDragControls, PanInfo } from 'framer-motion';
 import { MoreHorizontal, Heart, MessageCircle, Share, Bookmark, MapPinned } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import PostOptionModal from '../components/alert/PostOptionModal';
-import { Post } from '../types/Post';
 import profileImg from '../img/profile.jpg';
 import OpenChatConfirmModal from '../components/alert/OpenChatConfirmModal';
+import { MapPost } from '../apis/Post';
 
 // 부모 컴포넌트에서 전달받을 props 정의
 interface Props {
-  post: Post; // 게시물 데이터
-  onClose: () => void; // 모달 닫기 함수
+  post: MapPost;
+  onClose: () => void;
 }
 
 // 드래그 위치에 따른 모달 상태

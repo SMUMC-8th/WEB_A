@@ -8,7 +8,6 @@ import Portal from '../Portal';
 
 interface Props {
   onClose: () => void; // 모달 닫기 함수 (바깥 영역 클릭 시 실행)
-  // onSelect: (option: 'hide' | 'no-recommend' | 'report' | 'tag-hide') => void; // 선택 함수 props
 }
 
 const PostOptionModal = ({ onClose }: Props) => {
@@ -31,6 +30,7 @@ const PostOptionModal = ({ onClose }: Props) => {
           >
             관심 없음
           </button>
+
           <div className="border-t border-gray-200" />
           <button
             className="w-full px-4 py-3 text-left text-sm hover:bg-gray-50"
@@ -38,6 +38,7 @@ const PostOptionModal = ({ onClose }: Props) => {
           >
             사용자 추천 안 함
           </button>
+
           <div className="border-t border-gray-200" />
           <button
             className="w-full px-4 py-3 text-left text-sm hover:bg-gray-50"
