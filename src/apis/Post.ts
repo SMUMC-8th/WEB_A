@@ -241,21 +241,3 @@ export const fetchPlacesByIds = async (placeIds: number[]): Promise<Place[]> => 
   });
   return response.data.places;
 };
-
-// 사용자 추천 안함
-export const setNoRecommend = async (targetMemberId: number) => {
-  const res = await fetch('/api/member/no-recommend', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ targetMemberId }),
-  });
-
-  if (!res.ok) throw new Error('서버 오류');
-
-  const data = await res.json();
-  if (!data.isSuccess) throw new Error(data.message);
-
-  return data.result;
-};
