@@ -8,16 +8,38 @@ export default function SignUpPage() {
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
   const [nickname, setNickname] = useState('');
-  const [isChecked, setIsChecked] = useState(false);
-  const [isAvailable, setIsAvailable] = useState(false);
-  const [message, setMessage] = useState(''); // 오류 무시
 
-  const handleCheckNickname = () => {
+  const [isChecked, setIsChecked] = useState(false); // 닉네임
+  const [isAvailable, setIsAvailable] = useState(false); // 닉네임
+  const [isIdChecked, setIsIdChecked] = useState(false); // 아이디
+  const [isIdAvailable, setIsIdAvailable] = useState(false); // 아이디
+
+  const handleCheckId = async () => {
+    if (!id) return;
+    try {
+      const res = await SignupAPI.checkId(id);
+      const { result } = res;
+      setIsIdChecked(true);
+      setIsIdAvailable(result.includes('사용가능한'));
+    } catch (error) {
+      console.error('중복 확인 실패:', error);
+      setIsIdChecked(true);
+      setIsIdAvailable(false);
+    }
+  };
+
+  const handleCheckNickname = async () => {
     if (!nickname) return;
-    const duplicatedNicknames = ['smugod', 'admin'];
-    const isDup = duplicatedNicknames.includes(nickname.toLowerCase());
-    setIsChecked(true);
-    setIsAvailable(!isDup);
+    try {
+      const res = await SignupAPI.checkNickname(nickname);
+      const { result } = res;
+      setIsChecked(true);
+      setIsAvailable(result.includes('사용가능한'));
+    } catch (error) {
+      console.error('닉네임 중복 확인 실패:', error);
+      setIsChecked(true);
+      setIsAvailable(false);
+    }
   };
 
   // 유효성 검사
@@ -29,7 +51,14 @@ export default function SignUpPage() {
   const isPasswordMatch = password && passwordConfirm && password === passwordConfirm;
 
   const isFormValid =
-    isChecked && isAvailable && isIdValid && isPasswordLengthValid && isPasswordMatch && nickname;
+    isIdChecked &&
+    isIdAvailable &&
+    isIdValid &&
+    isChecked &&
+    isAvailable &&
+    isPasswordLengthValid &&
+    isPasswordMatch &&
+    nickname;
 
   const handleSubmit = async () => {
     try {
@@ -41,7 +70,7 @@ export default function SignUpPage() {
       });
       formData.append('SignUp', new Blob([json], { type: 'application/json' }));
 
-      await SignupAPI(formData);
+      await SignupAPI.signUp(formData);
       alert('회원가입 성공');
       navigate('/logincomplete');
     } catch (error) {
@@ -122,6 +151,7 @@ export default function SignUpPage() {
               color: isChecked ? '#666' : 'white',
               cursor: isChecked ? 'default' : 'pointer',
             }}
+            disabled={isChecked || nickname.trim().length < 2}
           >
             중복확인
           </button>
@@ -137,20 +167,49 @@ export default function SignUpPage() {
       {/* 아이디 */}
       <div style={{ marginBottom: '24px' }}>
         <label style={labelStyle}>아이디</label>
-        <input
-          type="text"
-          placeholder="아이디 입력"
-          value={id}
-          onChange={(e) => setId(e.target.value)}
-          style={{
-            ...inputStyle,
-            borderBottom: id.length > 0 && !isIdValid ? '2px solid red' : '1.5px solid #ccc',
-            color: id.length > 0 && !isIdValid ? 'red' : 'inherit',
-          }}
-        />
-        {id.length > 0 && !isIdValid && (
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <input
+            type="text"
+            placeholder="아이디 입력"
+            value={id}
+            onChange={(e) => {
+              setId(e.target.value);
+              setIsIdChecked(false);
+              setIsIdAvailable(false);
+            }}
+            style={{
+              ...inputStyle,
+              borderBottom:
+                id.length > 0 && (!isIdValid || (isIdChecked && !isIdAvailable))
+                  ? '2px solid red'
+                  : '1.5px solid #ccc',
+              color:
+                id.length > 0 && (!isIdValid || (isIdChecked && !isIdAvailable))
+                  ? 'red'
+                  : 'inherit',
+            }}
+          />
+          <button
+            onClick={handleCheckId}
+            style={{
+              ...checkButtonStyle,
+              backgroundColor: isIdChecked ? '#ccc' : '#297FB8',
+              color: isIdChecked ? '#666' : 'white',
+              cursor: isIdChecked ? 'default' : 'pointer',
+            }}
+            disabled={!isIdValid || isIdChecked}
+          >
+            중복확인
+          </button>
+        </div>
+        {!isIdValid && id.length > 0 && (
           <p style={{ ...guideStyle, color: 'red' }}>
             아이디는 6~12자의 영문, 숫자만 사용 가능합니다.
+          </p>
+        )}
+        {isIdChecked && (
+          <p style={{ ...guideStyle, color: isIdAvailable ? '#297FB8' : 'red', fontWeight: 500 }}>
+            {isIdAvailable ? '사용 가능한 아이디입니다.' : '이미 존재하는 아이디입니다.'}
           </p>
         )}
       </div>
