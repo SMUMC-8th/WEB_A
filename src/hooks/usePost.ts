@@ -90,9 +90,16 @@ export const usePost = (): UsePostReturn => {
   const submitPost = useCallback(
     async (formData: FormData, onSuccess: () => void, onError: (error: string) => void) => {
       try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          onError('로그인이 필요합니다.');
+          return;
+        }
+
         const response = await axios.post<PostResponse>('/api/posts', formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
+            Authorization: `Bearer ${token}`,
           },
         });
 
@@ -106,7 +113,11 @@ export const usePost = (): UsePostReturn => {
         }
       } catch (error) {
         console.error('게시물 제출 실패:', error);
-        onError('게시물 제출에 실패했습니다. 다시 시도해주세요.');
+        if (axios.isAxiosError(error) && error.response?.status === 401) {
+          onError('로그인이 만료되었습니다. 다시 로그인해주세요.');
+        } else {
+          onError('게시물 제출에 실패했습니다. 다시 시도해주세요.');
+        }
       }
     },
     [validateServerResponse],
