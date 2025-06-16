@@ -1,4 +1,3 @@
-// components/Feed.tsx
 import { useQuery } from '@tanstack/react-query';
 import { fetchPostsByPlaceIds, Post } from '../apis/Post';
 import { Ellipsis, Heart, MessageCircle, MapPin } from 'lucide-react';
@@ -44,10 +43,7 @@ const Feed = () => {
   return (
     <div className="pt-[100px] space-y-4">
       {posts.map((post: Post) => (
-        <div
-          key={post.postId}
-          className="overflow-hidden shadow-md outline outline-1 outline-gray-200 rounded-md bg-white"
-        >
+        <div key={post.postId} className="overflow-hidden outline-gray-300">
           <div className="flex items-center p-3">
             <img
               src={post.profileUrl || 'https://www.studiopeople.kr/common/img/default_profile.png'}

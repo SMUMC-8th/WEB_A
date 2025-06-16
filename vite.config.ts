@@ -9,6 +9,7 @@ export default defineConfig({
       '/api': {
         target: 'https://api-smp.shop',
         changeOrigin: true,
+        secure: false,
         rewrite: (path) => path.replace(/^\/api/, ''),
       },
     },
