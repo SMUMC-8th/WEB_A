@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { Map as KakaoMap, CustomOverlayMap } from 'react-kakao-maps-sdk';
 
 interface Place {
   placeName: string;
@@ -10,38 +9,202 @@ interface Place {
   longitude: number;
 }
 
+// 카카오맵 타입 선언
+declare global {
+  interface Window {
+    kakao: {
+      maps: {
+        Map: new (
+          container: HTMLElement,
+          options: { center: { getLat: () => number; getLng: () => number }; level: number },
+        ) => {
+          setCenter: (latlng: { getLat: () => number; getLng: () => number }) => void;
+          setLevel: (level: number) => void;
+        };
+        LatLng: new (lat: number, lng: number) => { getLat: () => number; getLng: () => number };
+        Marker: new (options: {
+          position: { getLat: () => number; getLng: () => number };
+          map: any;
+        }) => {
+          setMap: (map: any) => void;
+        };
+        InfoWindow: new (options: {
+          content: string;
+          removable: boolean;
+          zIndex: number;
+          position: { getLat: () => number; getLng: () => number };
+          maxWidth: number;
+          pixelOffset: { x: number; y: number };
+        }) => {
+          open: (map: any, marker: any) => void;
+        };
+        Point: new (x: number, y: number) => { x: number; y: number };
+        services: {
+          Status: { OK: string };
+          Places: new () => {
+            keywordSearch: (
+              keyword: string,
+              callback: (
+                data: Array<{ place_name: string; address_name: string; x: string; y: string }>,
+                status: string,
+              ) => void,
+            ) => void;
+          };
+        };
+      };
+    };
+  }
+}
+
 export default function Location() {
   const navigate = useNavigate();
   const [query, setQuery] = useState<string>('');
   const [searchResults, setSearchResults] = useState<Place[]>([]);
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
-  const [map, setMap] = useState<kakao.maps.Map | null>(null);
-  const [myLocation, setMyLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [map, setMap] = useState<{
+    setCenter: (latlng: { getLat: () => number; getLng: () => number }) => void;
+    setLevel: (level: number) => void;
+  } | null>(null);
+  const [isKakaoLoaded, setIsKakaoLoaded] = useState(false);
+  const [marker, setMarker] = useState<{ setMap: (map: any) => void } | null>(null);
 
-  // 사용자의 현재 위치 요청
+  // 카카오맵 스크립트 로드 확인
   useEffect(() => {
+    const checkKakaoLoaded = () => {
+      if (window.kakao && window.kakao.maps) {
+        setIsKakaoLoaded(true);
+      } else {
+        setTimeout(checkKakaoLoaded, 100);
+      }
+    };
+    checkKakaoLoaded();
+  }, []);
+
+  // 지도 초기화
+  useEffect(() => {
+    if (!isKakaoLoaded) return;
+
+    const mapContainer = document.getElementById('map');
+    const mapOption = {
+      center: new window.kakao.maps.LatLng(37.5665, 126.978), // 서울시청
+      level: 3,
+    };
+
+    const newMap = new window.kakao.maps.Map(mapContainer, mapOption);
+    setMap(newMap);
+
+    // 현재 위치 가져오기
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        setMyLocation({
-          lat: pos.coords.latitude,
-          lng: pos.coords.longitude,
-        });
+        const moveLatLng = new window.kakao.maps.LatLng(pos.coords.latitude, pos.coords.longitude);
+        newMap.setCenter(moveLatLng);
       },
       (error) => {
         console.error('위치 가져오기 실패:', error);
-        // 기본 위치 설정 (서울시청)
-        setMyLocation({ lat: 37.5665, lng: 126.978 });
       },
     );
-  }, []);
+  }, [isKakaoLoaded]);
+
+  // 마커 생성 함수
+  const createMarker = (place: Place) => {
+    if (!isKakaoLoaded || !map) return;
+
+    // 기존 마커 제거
+    if (marker) {
+      marker.setMap(null);
+    }
+
+    // 새 마커 생성
+    const newMarker = new window.kakao.maps.Marker({
+      position: new window.kakao.maps.LatLng(place.latitude, place.longitude),
+      map: map,
+    });
+    setMarker(newMarker);
+
+    // 인포윈도우 내용 설정
+    const content = `
+      <div style="
+        padding: 15px;
+        width: 250px;
+        background: white;
+        border-radius: 10px;
+        box-shadow: none !important;
+        border: none !important;
+        
+      ">
+        <div style="
+          font-size: 16px;
+          font-weight: bold;
+          color: #333;
+          margin-bottom: 8px;
+        ">${place.placeName}</div>
+        <div style="
+          font-size: 14px;
+          color: #666;
+          line-height: 1.4;
+        ">${place.address}</div>
+      </div>
+    `;
+
+    // 인포윈도우 생성 및 표시
+    const newInfowindow = new window.kakao.maps.InfoWindow({
+      content: content,
+      removable: true,
+      zIndex: 1,
+      position: new window.kakao.maps.LatLng(place.latitude, place.longitude),
+      maxWidth: 300,
+      pixelOffset: new window.kakao.maps.Point(0, -30),
+      disableAutoPan: true,
+    });
+    newInfowindow.open(map, newMarker);
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(e.target.value);
   };
 
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!query.trim() || !isKakaoLoaded || !window.kakao?.maps?.services) {
+      return;
+    }
+
+    try {
+      const ps = new window.kakao.maps.services.Places();
+      ps.keywordSearch(query, (data: any, status: any) => {
+        if (status === window.kakao.maps.services.Status.OK) {
+          const results = data.map((place: any) => ({
+            placeName: place.place_name,
+            address: place.address_name,
+            latitude: Number(place.y),
+            longitude: Number(place.x),
+          }));
+          setSearchResults(results);
+
+          // 첫 번째 검색 결과로 지도 이동
+          if (results.length > 0 && map) {
+            const firstResult = results[0];
+            setSelectedPlace(firstResult);
+            const moveLatLng = new window.kakao.maps.LatLng(
+              firstResult.latitude,
+              firstResult.longitude,
+            );
+            map.setCenter(moveLatLng);
+            map.setLevel(3);
+            createMarker(firstResult);
+          }
+        }
+      });
+    } catch (error) {
+      console.error('장소 검색 중 오류 발생:', error);
+    }
+  };
+
   const handleSave = () => {
-    if (query.trim()) {
-      console.log('검색어:', query.trim());
+    if (selectedPlace) {
+      localStorage.setItem('selectedLocation', JSON.stringify(selectedPlace));
+      navigate('/post/write');
+    } else if (query.trim()) {
       localStorage.setItem(
         'selectedLocation',
         JSON.stringify({
@@ -51,10 +214,7 @@ export default function Location() {
           longitude: 0,
         }),
       );
-
       navigate('/post/write');
-    } else {
-      console.log('검색어가 비어있음');
     }
   };
 
@@ -64,32 +224,17 @@ export default function Location() {
     setQuery(place.placeName);
 
     // 선택한 장소로 지도 이동
-    if (map) {
-      const moveLatLng = new kakao.maps.LatLng(place.latitude, place.longitude);
+    if (map && isKakaoLoaded) {
+      const moveLatLng = new window.kakao.maps.LatLng(place.latitude, place.longitude);
       map.setCenter(moveLatLng);
       map.setLevel(3);
+      createMarker(place);
     }
   };
 
   return (
     <div className="relative h-screen">
-      {myLocation && (
-        <KakaoMap center={myLocation} level={3} className="w-full h-full" onCreate={setMap}>
-          {selectedPlace && (
-            <>
-              <CustomOverlayMap
-                position={{ lat: selectedPlace.latitude, lng: selectedPlace.longitude }}
-                yAnchor={1}
-              >
-                <div className="bg-white px-2 py-2 rounded-lg border border-blue-600">
-                  <div className="font-medium">{selectedPlace.placeName}</div>
-                  <div className="text-sm text-gray-500">{selectedPlace.address}</div>
-                </div>
-              </CustomOverlayMap>
-            </>
-          )}
-        </KakaoMap>
-      )}
+      <div id="map" className="w-full h-full" />
 
       <div className="absolute top-0 left-0 right-0 z-10 bg-white">
         <div className="flex items-center justify-between px-4 py-4">
@@ -102,7 +247,7 @@ export default function Location() {
       </div>
 
       <div className="absolute top-[80px] left-0 right-0 px-4 z-10">
-        <div className="relative">
+        <form onSubmit={handleSearch} className="relative">
           <input
             type="text"
             placeholder="장소를 검색하세요"
@@ -114,7 +259,7 @@ export default function Location() {
             size={20}
             className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
           />
-        </div>
+        </form>
 
         {/* 검색 결과 목록 */}
         {searchResults.length > 0 && (
