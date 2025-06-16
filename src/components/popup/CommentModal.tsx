@@ -1,13 +1,15 @@
 // import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 // import { useEffect, useRef, useState } from 'react';
-// import { useMutation, useQuery } from '@tanstack/react-query';
+// import { useQuery, useMutation } from '@tanstack/react-query';
 // import { fetchCommentsByPostId, postCommentByPostId } from '../../apis/Post';
+// import { Heart, Reply } from 'lucide-react';
 
-// type Props = {
+// // Props 및 타입 정의
+// interface Props {
 //   isOpen: boolean;
 //   onClose: () => void;
 //   postId: number;
-// };
+// }
 
 // interface Comment {
 //   commentId: number;
@@ -30,6 +32,7 @@
 //   const [commentInput, setCommentInput] = useState('');
 //   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+//   // 댓글 조회 useQuery
 //   const {
 //     data: comments = [],
 //     isLoading,
@@ -43,29 +46,25 @@
 //   });
 
 //   // 댓글 작성 useMutation
-//   const { mutate: postComment, isLoading: isPosting } = useMutation({
+//   const { mutate: postComment, isPending: isPosting } = useMutation({
 //     mutationFn: (content: string) => postCommentByPostId(postId, content),
 //     onSuccess: () => {
 //       setCommentInput('');
 //       refetch();
 //     },
 //     onError: (error) => {
+//       console.error('댓글 등록 오류:', error);
 //       alert('댓글 등록에 실패했습니다.');
 //     },
 //   });
 
 //   useEffect(() => {
-//     if (isOpen) {
-//       document.body.style.overflow = 'hidden';
-//     } else {
-//       document.body.style.overflow = '';
-//     }
+//     document.body.style.overflow = isOpen ? 'hidden' : '';
 //     return () => {
 //       document.body.style.overflow = '';
 //     };
 //   }, [isOpen]);
 
-//   // textarea 자동 높이 조절
 //   const adjustTextareaHeight = () => {
 //     const el = textareaRef.current;
 //     if (el) {
@@ -87,10 +86,7 @@
 //     if (startYRef.current !== null) {
 //       const delta = startYRef.current - info.point.y;
 //       let newHeight = prevHeightRef.current + delta;
-
-//       if (newHeight < initialHeight) newHeight = initialHeight;
-//       if (newHeight > maxHeight) newHeight = maxHeight;
-
+//       newHeight = Math.max(initialHeight, Math.min(maxHeight, newHeight));
 //       setHeight(newHeight);
 //     }
 //   };
@@ -104,9 +100,7 @@
 
 //   const handleCommentSubmit = () => {
 //     if (commentInput.trim()) {
-//       alert(`보낸 댓글: ${commentInput}`);
-//       setCommentInput('');
-//       refetch(); // 댓글 새로고침
+//       postComment(commentInput.trim());
 //     }
 //   };
 
@@ -178,6 +172,16 @@
 //                       <div>
 //                         <p className="text-sm font-semibold">{comment.nickname}</p>
 //                         <p className="text-sm text-gray-700">{comment.content}</p>
+//                         <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
+//                           <span className="flex items-center gap-1">
+//                             <Heart className="w-4 h-4" />
+//                             {comment.likeCount}
+//                           </span>
+//                           <span className="flex items-center gap-1 cursor-pointer">
+//                             <Reply className="w-4 h-4" />
+//                             {comment.replyCount}
+//                           </span>
+//                         </div>
 //                       </div>
 //                     </div>
 //                   ))
@@ -185,22 +189,24 @@
 //               </div>
 
 //               {/* 댓글 입력창 */}
-//               <div className="flex-shrink-0 pt-3 border-t flex items-center gap-2">
+//               <div className="flex-shrink-0 pt-3 border-t border-gray-200 flex items-center gap-2">
 //                 <textarea
 //                   ref={textareaRef}
 //                   value={commentInput}
 //                   onChange={(e) => setCommentInput(e.target.value)}
 //                   placeholder="댓글을 입력하세요..."
 //                   rows={1}
-//                   className="flex-grow px-3 py-2 text-sm border rounded-2xl resize-none focus:outline-none focus:ring-2 focus:ring-blue-400"
+//                   disabled={isPosting}
+//                   className="flex-grow px-3 py-2 text-sm border border-gray-200 rounded-2xl resize-none focus:outline-none focus:ring-2 focus:ring-blue-400"
 //                   style={{ maxHeight: '150px', overflowY: 'hidden' }}
 //                 />
 //                 {commentInput.trim() && (
 //                   <button
 //                     onClick={handleCommentSubmit}
+//                     disabled={isPosting}
 //                     className="text-sm font-semibold text-blue-500 hover:text-blue-600"
 //                   >
-//                     보내기
+//                     {isPosting ? '전송 중...' : '보내기'}
 //                   </button>
 //                 )}
 //               </div>
@@ -213,14 +219,17 @@
 // };
 
 // export default CommentModal;
-
-// CommentModal.tsx
 import { motion, AnimatePresence, PanInfo } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { fetchCommentsByPostId, postCommentByPostId } from '../../apis/Post';
+import {
+  fetchCommentsByPostId,
+  postCommentByPostId,
+  editCommentById,
+  deleteCommentById,
+} from '../../apis/Post';
+import { Heart, Reply } from 'lucide-react';
 
-// Props 및 타입 정의
 interface Props {
   isOpen: boolean;
   onClose: () => void;
@@ -248,7 +257,12 @@ const CommentModal = ({ isOpen, onClose, postId }: Props) => {
   const [commentInput, setCommentInput] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // 댓글 조회 useQuery
+  const [swipedCommentId, setSwipedCommentId] = useState<number | null>(null);
+
+  // 수정 모드 댓글 ID 및 수정 입력 상태 관리
+  const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
+  const [editContent, setEditContent] = useState<string>('');
+
   const {
     data: comments = [],
     isLoading,
@@ -261,7 +275,6 @@ const CommentModal = ({ isOpen, onClose, postId }: Props) => {
     staleTime: 1000 * 60,
   });
 
-  // 댓글 작성 useMutation
   const { mutate: postComment, isPending: isPosting } = useMutation({
     mutationFn: (content: string) => postCommentByPostId(postId, content),
     onSuccess: () => {
@@ -272,6 +285,27 @@ const CommentModal = ({ isOpen, onClose, postId }: Props) => {
       console.error('댓글 등록 오류:', error);
       alert('댓글 등록에 실패했습니다.');
     },
+  });
+
+  const { mutate: editComment } = useMutation({
+    mutationFn: ({ commentId, newContent }: { commentId: number; newContent: string }) =>
+      editCommentById(commentId, newContent),
+    onSuccess: () => {
+      alert('댓글이 수정되었습니다.');
+      setEditingCommentId(null);
+      setEditContent('');
+      refetch();
+    },
+    onError: () => alert('댓글 수정 실패'),
+  });
+
+  const { mutate: removeComment } = useMutation({
+    mutationFn: (commentId: number) => deleteCommentById(commentId),
+    onSuccess: () => {
+      alert('댓글이 삭제되었습니다.');
+      refetch();
+    },
+    onError: () => alert('댓글 삭제 실패'),
   });
 
   useEffect(() => {
@@ -320,6 +354,34 @@ const CommentModal = ({ isOpen, onClose, postId }: Props) => {
     }
   };
 
+  const handleSwipeEnd = (commentId: number, info: PanInfo) => {
+    if (info.offset.x < -80) {
+      setSwipedCommentId(commentId);
+    } else {
+      setSwipedCommentId(null);
+    }
+  };
+
+  // 댓글 수정 시작
+  const startEditing = (comment: Comment) => {
+    setEditingCommentId(comment.commentId);
+    setEditContent(comment.content);
+    setSwipedCommentId(null); // 스와이프 메뉴 닫기
+  };
+
+  // 댓글 수정 취소
+  const cancelEditing = () => {
+    setEditingCommentId(null);
+    setEditContent('');
+  };
+
+  // 댓글 수정 완료
+  const submitEdit = () => {
+    if (editingCommentId !== null && editContent.trim()) {
+      editComment({ commentId: editingCommentId, newContent: editContent.trim() });
+    }
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -329,6 +391,8 @@ const CommentModal = ({ isOpen, onClose, postId }: Props) => {
             onClick={() => {
               onClose();
               setHeight(initialHeight);
+              setSwipedCommentId(null);
+              cancelEditing();
             }}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -361,6 +425,8 @@ const CommentModal = ({ isOpen, onClose, postId }: Props) => {
                   onClick={() => {
                     onClose();
                     setHeight(initialHeight);
+                    setSwipedCommentId(null);
+                    cancelEditing();
                   }}
                 />
                 <h2 className="text-lg font-bold mb-2">댓글</h2>
@@ -375,27 +441,113 @@ const CommentModal = ({ isOpen, onClose, postId }: Props) => {
                 ) : comments.length === 0 ? (
                   <p className="text-sm text-gray-400 text-center">아직 댓글이 없습니다.</p>
                 ) : (
-                  comments.map((comment) => (
-                    <div key={comment.commentId} className="flex items-start gap-2">
-                      <img
-                        src={
-                          comment.profileUrl ||
-                          'https://www.studiopeople.kr/common/img/default_profile.png'
-                        }
-                        alt="user"
-                        className="w-8 h-8 rounded-full"
-                      />
-                      <div>
-                        <p className="text-sm font-semibold">{comment.nickname}</p>
-                        <p className="text-sm text-gray-700">{comment.content}</p>
+                  comments.map((comment) => {
+                    const isSwiped = swipedCommentId === comment.commentId;
+                    const isEditing = editingCommentId === comment.commentId;
+
+                    return (
+                      <div
+                        key={comment.commentId}
+                        className="relative bg-white overflow-hidden rounded-lg"
+                      >
+                        {/* 숨겨진 버튼 (오른쪽) */}
+                        <div className="absolute right-0 top-0 h-full flex items-center bg-gray-100 pr-4 pl-2 z-0 space-x-2">
+                          {!isEditing && (
+                            <>
+                              <button
+                                onClick={() => startEditing(comment)}
+                                className="text-gray-400 hover:underline"
+                              >
+                                수정
+                              </button>
+                              <button
+                                onClick={() => removeComment(comment.commentId)}
+                                className="text-gray-400 hover:underline"
+                              >
+                                삭제
+                              </button>
+                            </>
+                          )}
+                        </div>
+
+                        {/* 댓글 내용 또는 수정 입력창 */}
+                        <motion.div
+                          className="relative z-10 bg-white px-3 py-2"
+                          drag={!isEditing ? 'x' : false}
+                          dragConstraints={{ left: 0, right: 0 }}
+                          onDragEnd={(_, info) =>
+                            !isEditing && handleSwipeEnd(comment.commentId, info)
+                          }
+                          animate={{ x: isSwiped ? -100 : 0 }}
+                          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                        >
+                          <div className="flex items-start gap-2">
+                            <img
+                              src={
+                                comment.profileUrl ||
+                                'https://www.studiopeople.kr/common/img/default_profile.png'
+                              }
+                              alt="user"
+                              className="w-8 h-8 rounded-full"
+                            />
+                            <div className="flex-grow">
+                              <p className="text-sm font-semibold">{comment.nickname}</p>
+                              {isEditing ? (
+                                <div className="flex flex-col gap-1">
+                                  <textarea
+                                    value={editContent}
+                                    onChange={(e) => setEditContent(e.target.value)}
+                                    rows={2}
+                                    className="w-full text-sm border border-gray-300 rounded-md p-2 resize-none focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                    style={{ maxHeight: '100px' }}
+                                  />
+                                  <div className="flex gap-2 justify-end">
+                                    <button
+                                      onClick={cancelEditing}
+                                      className="text-sm px-3 py-1 rounded-md border border-gray-300 hover:bg-gray-100"
+                                    >
+                                      취소
+                                    </button>
+                                    <button
+                                      onClick={submitEdit}
+                                      disabled={!editContent.trim()}
+                                      className={`text-sm px-3 py-1 rounded-md text-white ${
+                                        editContent.trim()
+                                          ? 'bg-blue-500 hover:bg-blue-600'
+                                          : 'bg-blue-300 cursor-not-allowed'
+                                      }`}
+                                    >
+                                      저장
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <p className="text-sm text-gray-700">{comment.content}</p>
+                              )}
+
+                              {!isEditing && (
+                                <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
+                                  <span className="flex items-center gap-1">
+                                    <Heart className="w-4 h-4" />
+                                    {comment.likeCount}
+                                  </span>
+                                  <span className="flex items-center gap-1 cursor-pointer">
+                                    <Reply className="w-4 h-4" />
+                                    {comment.replyCount}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </motion.div>
                       </div>
-                    </div>
-                  ))
+                    );
+                  })
                 )}
               </div>
 
               {/* 댓글 입력창 */}
-              <div className="flex-shrink-0 pt-3 border-t flex items-center gap-2">
+              <div className="flex-shrink-0 pt-3 border-t border-gray-200 flex items-center gap-2">
                 <textarea
                   ref={textareaRef}
                   value={commentInput}
@@ -403,18 +555,16 @@ const CommentModal = ({ isOpen, onClose, postId }: Props) => {
                   placeholder="댓글을 입력하세요..."
                   rows={1}
                   disabled={isPosting}
-                  className="flex-grow px-3 py-2 text-sm border rounded-2xl resize-none focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  className="flex-grow px-3 py-2 text-sm border border-gray-200 rounded-2xl resize-none focus:outline-none focus:ring-2 focus:ring-blue-400"
                   style={{ maxHeight: '150px', overflowY: 'hidden' }}
                 />
-                {commentInput.trim() && (
-                  <button
-                    onClick={handleCommentSubmit}
-                    disabled={isPosting}
-                    className="text-sm font-semibold text-blue-500 hover:text-blue-600"
-                  >
-                    {isPosting ? '전송 중...' : '보내기'}
-                  </button>
-                )}
+                <button
+                  onClick={handleCommentSubmit}
+                  disabled={isPosting || !commentInput.trim()}
+                  className="text-sm font-semibold text-blue-500 hover:text-blue-600 disabled:text-blue-300"
+                >
+                  {isPosting ? '전송 중...' : '보내기'}
+                </button>
               </div>
             </motion.div>
           </div>
