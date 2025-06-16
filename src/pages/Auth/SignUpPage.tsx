@@ -8,19 +8,27 @@ export default function SignUpPage() {
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
   const [nickname, setNickname] = useState('');
+  // const [checkId, setCheckId] = useState(''); // 아이디 중복 확인을 위한 상태
 
-  const [isChecked, setIsChecked] = useState(false); // 닉네임
-  const [isAvailable, setIsAvailable] = useState(false); // 닉네임
-  const [isIdChecked, setIsIdChecked] = useState(false); // 아이디
-  const [isIdAvailable, setIsIdAvailable] = useState(false); // 아이디
+  const [isChecked, setIsChecked] = useState(false); // 닉네임 중복 확인 여부
+  const [isAvailable, setIsAvailable] = useState(false); // 닉네임 사용 가능 여부
+  const [isIdChecked, setIsIdChecked] = useState(false); // 아이디 중복 확인 여부
+  const [isIdAvailable, setIsIdAvailable] = useState(false); // 아이디 사용 가능 여부
 
+  // 아이디 중복 확인 함수
   const handleCheckId = async () => {
     if (!id) return;
     try {
       const res = await SignupAPI.checkId(id);
-      const { result } = res;
+      console.log('아이디 중복 확인 API 응답:', res);
+
       setIsIdChecked(true);
-      setIsIdAvailable(result.includes('사용가능한'));
+
+      if (res == '사용가능한 ID 입니다.') {
+        setIsIdAvailable(true);
+      } else {
+        setIsIdAvailable(false);
+      }
     } catch (error) {
       console.error('중복 확인 실패:', error);
       setIsIdChecked(true);
@@ -28,13 +36,20 @@ export default function SignUpPage() {
     }
   };
 
+  // 닉네임 중복 확인 함수
   const handleCheckNickname = async () => {
     if (!nickname) return;
     try {
       const res = await SignupAPI.checkNickname(nickname);
-      const { result } = res;
+      console.log('닉네임 중복 확인 API 응답:', res);
+
       setIsChecked(true);
-      setIsAvailable(result.includes('사용가능한'));
+
+      if (res == '사용가능한 닉네임 입니다.') {
+        setIsAvailable(true);
+      } else {
+        setIsAvailable(false);
+      }
     } catch (error) {
       console.error('닉네임 중복 확인 실패:', error);
       setIsChecked(true);
@@ -144,7 +159,7 @@ export default function SignUpPage() {
             }}
           />
           <button
-            onClick={handleCheckNickname}
+            onClick={() => handleCheckNickname()}
             style={{
               ...checkButtonStyle,
               backgroundColor: isChecked ? '#ccc' : '#297FB8',
@@ -158,7 +173,7 @@ export default function SignUpPage() {
         </div>
         {isChecked && (
           <p style={{ ...guideStyle, color: isAvailable ? '#297FB8' : 'red', fontWeight: 500 }}>
-            {isAvailable ? '사용 가능한 닉네임입니다.' : '이미 존재하는 닉네임입니다.'}
+            {isAvailable ? '사용가능한 닉네임입니다.' : '이미 존재하는 닉네임입니다.'}
           </p>
         )}
         {!isChecked && <p style={guideStyle}>닉네임을 입력해주세요.</p>}
@@ -190,7 +205,7 @@ export default function SignUpPage() {
             }}
           />
           <button
-            onClick={handleCheckId}
+            onClick={() => handleCheckId()}
             style={{
               ...checkButtonStyle,
               backgroundColor: isIdChecked ? '#ccc' : '#297FB8',
