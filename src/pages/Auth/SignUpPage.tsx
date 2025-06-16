@@ -43,7 +43,7 @@ export default function SignUpPage() {
 
       await SignupAPI(formData);
       alert('회원가입 성공');
-      navigate('/profilephoto');
+      navigate('/logincomplete');
     } catch (error) {
       alert('회원가입 실패');
       console.error('에러 응답:', error);
