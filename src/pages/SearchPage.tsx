@@ -10,7 +10,7 @@ interface Props {
   onClose: () => void;
 }
 
-const SearchPage = ({ post, onClose }: Props) => {
+const SearchPage = ({ post }: Props) => {
   return (
     <div className="px-4 py-6">
       {/* 상단 헤더 */}

@@ -35,7 +35,13 @@ function Map() {
       try {
         const res = await fetchNearbyPosts(center.lat, center.lng);
         const simplePosts = res?.result?.simplePost ?? [];
-        const postList: MapPost[] = simplePosts.map((sp) => ({
+        type SimplePost = {
+          postId: number;
+          placeId: number;
+          placeName: string;
+          postImageUrl: string;
+        };
+        const postList: MapPost[] = simplePosts.map((sp: SimplePost) => ({
           postId: sp.postId,
           placeId: sp.placeId,
           placeName: sp.placeName,
