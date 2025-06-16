@@ -2,12 +2,13 @@
 // 게시물 상세 모달 페이지
 
 // import { postHide, postNoRecommend, postReport, postTagHide } from '../apis/postOption'; // ← API 함수 import
-
 import { motion, useDragControls, PanInfo } from 'framer-motion';
-import { MoreHorizontal, Heart, MessageCircle, Share, Bookmark } from 'lucide-react';
+import { MoreHorizontal, Heart, MessageCircle, Share, Bookmark, MapPinned } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import PostOptionModal from '../components/alert/PostOptionModal';
 import { Post } from '../types/Post';
+import profileImg from '../img/profile.jpg';
+import OpenChatConfirmModal from '../components/alert/OpenChatConfirmModal';
 
 // 부모 컴포넌트에서 전달받을 props 정의
 interface Props {
@@ -108,6 +109,9 @@ function PostDetail({ post, onClose }: Props) {
   //   }
   // };
 
+  // 오픈채팅방 입장 확인 모달 상태
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+
   return (
     <>
       {/* 배경 오버레이 */}
@@ -121,7 +125,7 @@ function PostDetail({ post, onClose }: Props) {
 
       {/* 상세 모달 본체 */}
       <motion.div
-        className="fixed bottom-0 left-0 w-full bg-white rounded-t-2xl shadow-lg z-50 overflow-hidden flex flex-col"
+        className="fixed bottom-0 left-0 w-full bg-white rounded-t-2xl shadow-lg z-50 overflow-visible flex flex-col"
         drag="y" // 수직 드래그 활성화
         dragConstraints={{ top: 0, bottom: 0 }} // 위/아래 드래그 제한
         // drag는 기본적으로 자유롭게 움직이게 되어 있어서, 제한 걸어놓고 지정 위치로 animate만 수행하도록 제어
@@ -148,13 +152,17 @@ function PostDetail({ post, onClose }: Props) {
         <div className="flex items-center justify-between px-4 pt-2">
           <div className="flex items-center gap-3">
             {/* 프로필 */}
-            <img src="" alt="profile" className="w-10 h-10 rounded-full bg-black object-cover" />
+            <img
+              src={profileImg}
+              alt="profile"
+              className="w-10 h-10 rounded-full bg-black object-cover"
+            />
             <div className="flex flex-col items-start gap-1 text-left">
               {/* 작성자 */}
-              <span className="text-sm font-semibold">{post.author}</span>
+              <span className="text-base font-semibold">{post.author}</span>
 
               {/* 장소 */}
-              <span className="text-xs text-gray-500">{post.title}</span>
+              <span className="text-sm text-gray-500">{post.title}</span>
             </div>
           </div>
 
@@ -166,32 +174,30 @@ function PostDetail({ post, onClose }: Props) {
             }}
           />
           {/* 점 세개 옵션 모달 */}
-          {showOptions && (
-            <PostOptionModal onClose={() => setShowOptions(false)} /> //onSelect={handleOptionSelect}
-          )}
+          {showOptions && <PostOptionModal onClose={() => setShowOptions(false)} />}
         </div>
 
-        {/* 게시물 이미지 */}
-        <div className="relative w-full mt-4" style={{ paddingTop: '100%' }}>
+        {/* 게시물 이미지 (4:3 비율 고정) */}
+        <div className="relative w-full aspect-[3/4] bg-gray-100 mt-5 ">
           <img
-            src={post.thumbnail}
+            src={post.thumbnail || '/fallback.jpg'} // 비어 있으면 기본 이미지
             alt={post.title}
             className="absolute top-0 left-0 w-full h-full object-cover"
           />
         </div>
 
         {/* 댓글, 좋아요, 공유, 북마크 아이콘 */}
-        <div className="flex justify-between items-center px-4 py-3 text-sm text-gray-500">
+        <div className="flex justify-between items-center px-4 py-3 text-base text-gray-500">
           <div className="flex items-center gap-4">
             {/* 댓글 */}
             <div className="flex items-center gap-1">
-              <MessageCircle className="w-4 h-4" />
+              <MessageCircle className="w-5 h-5" />
               <span>{post.commentCount}</span>
             </div>
 
             {/* 좋아요 */}
             <div className="flex items-center gap-1">
-              <Heart className="w-4 h-4" />
+              <Heart className="w-5 h-5" />
               <span>{post.likes}</span>
             </div>
 
@@ -205,45 +211,59 @@ function PostDetail({ post, onClose }: Props) {
               rel="noopener noreferrer" // 보안 및 성능 향상용 설정?
               className="flex items-center gap-1 hover:underline"
             >
-              {/* <MapPinned className="w-4 h-4" /> */}
+              <MapPinned className="w-5 h-5" />
               <span>{post.title}</span>
             </a>
           </div>
 
           {/* 공유, 북마크 아이콘 */}
           <div className="flex items-center gap-4">
-            <Share className="w-4 h-4" />
-            <Bookmark className="w-4 h-4" />
+            <Share className="w-5 h-5" />
+            <Bookmark className="w-5 h-5" />
           </div>
         </div>
 
         {/* 게시물 설명 및 해시태그 */}
-        <div className="px-4 pb-6 text-sm text-gray-500 text-left mt-3">
+        <div className="px-4 pb-6 text-sm text-left mt-3">
           {/* 설명 한 줄만 보이고 말 줄임표 적용 */}
-          <div className="mb-1 w-full truncate">{post.description}</div>
+          <div className="mb-1 w-full text-base text-gray-600 truncate">{post.description}</div>
           {/* 태그 */}
-          <div className="text-blue-600 font-medium">
+          <div className="text-blue-600 font-semibold text-base break-words">
             #성신여대 #성신여대맛집 #김치볶음밥 #스테이크
           </div>
         </div>
 
-        {/* 오픈채팅 아이콘 */}
         <div className="flex justify-center mt-2">
+          {/* 오픈채팅 버튼 */}
           <button
             onClick={() => {
-              const url = post.openChatUrl || 'https://open.kakao.com/'; // 오픈채팅 링크가 존재하면 링크로 이동, 없으면 오픈채팅 만들기 유도
-              window.open(url, '_blank', 'noopener,noreferrer'); // 새 탭에서 열기
+              // 오픈채팅 URL이 있을 경우: 팝업으로 한번 더 묻기
+              if (post.openChatUrl) {
+                setIsConfirmOpen(true); // 팝업 열기
+              } else {
+                // 없으면 오픈채팅 생성 페이지로 이동
+                window.open('https://open.kakao.com/', '_blank', 'noopener,noreferrer');
+              }
             }}
-            className="flex items-center gap-2 bg-white text-sm px-4 py-2 rounded-full shadow-md border border-gray-200 hover:shadow-lg transition"
+            className="flex items-center gap-2 bg-white text-sm px-5 py-3 rounded-full shadow-md border border-gray-200 hover:shadow-lg transition"
           >
-            <MessageCircle className="w-4 h-4 text-blue-600" />
+            {/* 아이콘 */}
+            <MessageCircle className="w-5 h-5 text-blue-600" />
 
-            {/* 버튼 내부 텍스트 */}
+            {/* 버튼 텍스트 */}
             <span className="text-gray-800 font-medium">
-              {/* 링크 있으면 이동, 없으면 만들기 */}
               {post.openChatUrl ? '오픈채팅방으로 이동' : '오픈채팅방 만들기'}
             </span>
           </button>
+
+          {/* 오픈채팅 확인 모달(openchat 링크가 있을 때 ) */}
+          {isConfirmOpen && post.openChatUrl && (
+            <OpenChatConfirmModal
+              placeName={post.title} // 예: '성신여대맛집'
+              openUrl={post.openChatUrl} // 실제 오픈채팅 링크
+              onClose={() => setIsConfirmOpen(false)} // 닫기
+            />
+          )}
         </div>
       </motion.div>
     </>
