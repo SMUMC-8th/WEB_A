@@ -23,8 +23,6 @@ export default function LoginForm() {
       console.log(' 로그인 API 응답 result:', result);
 
       if (result && result.accessToken) {
-        localStorage.setItem('accessToken', result.accessToken);
-        localStorage.setItem('nickname', result.nickname); //다시 저장해야함
         alert('로그인 성공 ');
         navigate('/mypage');
       } else {

@@ -68,7 +68,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <PostProvider>
         <SendbirdProvider
-          appId="B73D82D8-F243-43E5-9379-FAFB5F1FC574"
+          appId="6F72D7F7-E43F-42A8-8A04-5DC015559EE7"
           userId="1234"
           colorSet={myColorSet}
         >

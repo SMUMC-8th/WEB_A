@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { FaRegClipboard, FaClock, FaBookmark, FaHeart } from 'react-icons/fa';
 import { FiSearch, FiSettings } from 'react-icons/fi';
 import SettingsOptionModal from '../../components/popup/SettingsOptionModal';
-import api from '../../apis/api'; //
+import axiosInstance from '../../apis/axios';
 
 export default function MyPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -12,22 +12,10 @@ export default function MyPage() {
 
   useEffect(() => {
     const fetchUserInfo = async () => {
-      const token = localStorage.getItem('accessToken');
-      console.log(' 저장된 토큰:', token);
-
-      if (!token) {
-        console.warn(' 토큰 없음. 로그인 필요');
-        return;
-      }
-
       try {
-        const response = await api.get('/api/members', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await axiosInstance.get('/api/members');
 
-        const data = response.data;
+        const { data } = response;
         console.log(' 사용자 정보 응답:', data);
 
         if (data.isSuccess && data.result) {
@@ -36,9 +24,6 @@ export default function MyPage() {
 
           setUserNickname(nickname);
           setProfileImage(imageUrl);
-
-          localStorage.setItem('nickname', nickname);
-          localStorage.setItem('profileImage', imageUrl);
         } else {
           console.error(' 사용자 정보 없음 또는 실패 응답:', data.message || data.code);
         }
