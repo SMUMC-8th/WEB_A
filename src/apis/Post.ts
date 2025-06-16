@@ -1,4 +1,3 @@
-// apis/Post.ts
 import axiosInstance from './axios';
 
 export interface Post {
@@ -194,50 +193,68 @@ export const deleteCommentById = async (commentId: number) => {
   return response.data;
 };
 
-// 서버 응답 전용 Place 타입 - 위경도 포함
-export interface Place {
-  placeId: number;
-  name: string;
-  lat: number;
-  lng: number;
-}
-
-// 클라이언트 지도 렌더링 전용 MapPost 타입
 export interface MapPost {
-  id: number;
-  author: string;
-  title: string;
-  thumbnail: string;
-  description: string;
-  likes: number;
+  nickname: string;
+  profileUrl: string;
+  postImageUrl: string[];
+  imageTotalCount: number;
+  postId: number;
+  placeId: number;
+  likeCount: number;
   commentCount: number;
+  placeName: string;
+  content: string;
+  tags: string[];
   lat: number;
   lng: number;
-  authorId: number;
-  openChatUrl: string;
 }
 
 // Post → MapPost 변환 함수
-// post, place 위경도 합쳐서 mappost 만듬
 export const mapPostToMapPost = (post: Post, lat: number, lng: number): MapPost => ({
-  id: post.postId,
-  author: post.nickname,
-  title: post.placeName,
-  thumbnail: post.postImageUrl[0] ?? '',
-  description: post.content,
-  likes: post.likeCount,
+  nickname: post.nickname,
+  profileUrl: post.profileUrl,
+  postImageUrl: post.postImageUrl,
+  imageTotalCount: post.imageTotalCount,
+  postId: post.postId,
+  placeId: post.placeId,
+  likeCount: post.likeCount,
   commentCount: post.commentCount,
+  placeName: post.placeName,
+  content: post.content,
+  tags: post.tags,
   lat,
   lng,
-  authorId: 0,
-  openChatUrl: '',
 });
 
-// Post에 없는 장소 위경도를 보완해서 지도에 마커 찍게 해주는 보조 API!
-//  - placeId에 연결된 Place 테이블에는 위경도가 들어있음
+import { Place } from '../types/Post';
+
+// 장소 ID 배열로 Place 정보 가져오기 (좌표 포함)
 export const fetchPlacesByIds = async (placeIds: number[]): Promise<Place[]> => {
   const response = await axiosInstance.get<{ places: Place[] }>('/api/places', {
     params: { ids: placeIds.join(',') },
   });
+
   return response.data.places;
+};
+
+export const fetchNearbyPosts = async (
+  latitude: number,
+  longitude: number,
+  radiusKm: number = 5,
+) => {
+  const token = localStorage.getItem('accessToken');
+
+  const response = await axiosInstance.get('/api/posts/nearby', {
+    headers: {
+      Authorization: token ? `Bearer ${token}` : '',
+    },
+    params: {
+      latitude,
+      longitude,
+      radiusKm,
+    },
+    withCredentials: true,
+  });
+
+  return response.data;
 };
