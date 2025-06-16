@@ -41,9 +41,9 @@ const Feed = () => {
   }
 
   return (
-    <div className="pt-[100px] space-y-4">
+    <div className="h-screen overflow-y-auto pt-[100px]">
       {posts.map((post: Post) => (
-        <div key={post.postId} className="overflow-hidden outline-gray-300">
+        <div key={post.postId} className="outline-gray-300">
           <div className="flex items-center p-3">
             <img
               src={post.profileUrl || 'https://www.studiopeople.kr/common/img/default_profile.png'}
