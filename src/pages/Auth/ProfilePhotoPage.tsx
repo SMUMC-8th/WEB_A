@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../../apis/api'; // ← axiosInstance 가져오기
+import api from '../../apis/api';
+import { AxiosError } from 'axios';
 
 export default function ProfilePhotoPage() {
   const navigate = useNavigate();
@@ -14,31 +15,48 @@ export default function ProfilePhotoPage() {
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setSelectedFile(file); //  실제 파일 저장
+    if (!file) return;
 
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64data = reader.result as string;
-        setPreviewUrl(base64data); // 미리보기용
-      };
-      reader.readAsDataURL(file);
+    const allowedTypes = ['image/jpeg', 'image/png'];
+    if (!allowedTypes.includes(file.type)) {
+      alert('JPEG 또는 PNG 형식의 이미지만 업로드 가능합니다.');
+      return;
     }
+
+    setSelectedFile(file);
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPreviewUrl(reader.result as string);
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleConfirm = async () => {
-    if (!selectedFile) return;
+    if (!selectedFile) {
+      alert('이미지를 선택해 주세요.');
+      return;
+    }
 
     const formData = new FormData();
-    formData.append('image', selectedFile); // key 이름은 Swagger 명세와 맞춰야 함
+    formData.append('file', selectedFile); // 여기가 문제였어용 key 값 이름이 달라서
 
     try {
-      await api.post('/api/members/profile-image', formData); // 쿠키 인증 포함된 요청
+      const response = await api.patch('/api/members/profile-image', formData);
+      console.log('업로드 성공 응답:', response.data);
+
       alert('프로필 사진 업로드 완료');
-      navigate('/logincomplete'); // 또는 메인 페이지 등
+      navigate('/logincomplete');
     } catch (error) {
-      console.error('이미지 업로드 실패:', error);
-      alert('이미지 업로드 중 오류가 발생했습니다.');
+      const axiosError = error as AxiosError<{ message?: string }>;
+
+      if (axiosError.response) {
+        console.error('서버 응답 에러:', axiosError.response.data);
+        alert(`업로드 실패: ${axiosError.response.data.message || '에러 발생'}`);
+      } else {
+        console.error('요청 실패:', axiosError);
+        alert('네트워크 오류 또는 서버 문제입니다.');
+      }
     }
   };
 
