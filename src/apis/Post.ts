@@ -100,3 +100,97 @@ export const postCommentByPostId = async (postId: number, content: string) => {
 
   return response.data;
 };
+<<<<<<< Updated upstream
+=======
+
+// 댓글 관련 API 함수
+// 댓글 수정
+export const editCommentById = async (commentId: number, newContent: string) => {
+  const response = await axiosInstance.patch(`/api/comments/${commentId}`, {
+    content: newContent,
+  });
+
+  if (!response.data?.isSuccess) {
+    throw new Error(response.data?.message || '댓글 수정 실패');
+  }
+
+  return response.data;
+};
+
+// 댓글 삭제
+export const deleteCommentById = async (commentId: number) => {
+  const response = await axiosInstance.delete(`/api/comments/${commentId}`);
+
+  if (!response.data?.isSuccess) {
+    throw new Error(response.data?.message || '댓글 삭제 실패');
+  }
+
+  return response.data;
+};
+
+// 서버 응답 전용 Place 타입 - 위경도 포함
+export interface Place {
+  placeId: number;
+  name: string;
+  lat: number;
+  lng: number;
+}
+
+// 클라이언트 지도 렌더링 전용 MapPost 타입
+export interface MapPost {
+  id: number;
+  author: string;
+  title: string;
+  thumbnail: string;
+  description: string;
+  likes: number;
+  commentCount: number;
+  lat: number;
+  lng: number;
+  authorId: number;
+  openChatUrl: string;
+}
+
+// Post → MapPost 변환 함수
+// post, place 위경도 합쳐서 mappost 만듬
+export const mapPostToMapPost = (post: Post, lat: number, lng: number): MapPost => ({
+  id: post.postId,
+  author: post.nickname,
+  title: post.placeName,
+  thumbnail: post.postImageUrl[0] ?? '',
+  description: post.content,
+  likes: post.likeCount,
+  commentCount: post.commentCount,
+  lat,
+  lng,
+  authorId: 0,
+  openChatUrl: '',
+});
+
+// Post에 없는 장소 위경도를 보완해서 지도에 마커 찍게 해주는 보조 API!
+//  - placeId에 연결된 Place 테이블에는 위경도가 들어있음
+export const fetchPlacesByIds = async (placeIds: number[]): Promise<Place[]> => {
+  const response = await axiosInstance.get<{ places: Place[] }>('/api/places', {
+    params: { ids: placeIds.join(',') },
+  });
+  return response.data.places;
+};
+
+// 사용자 추천 안함
+export const setNoRecommend = async (targetMemberId: number) => {
+  const res = await fetch('/api/member/no-recommend', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ targetMemberId }),
+  });
+
+  if (!res.ok) throw new Error('서버 오류');
+
+  const data = await res.json();
+  if (!data.isSuccess) throw new Error(data.message);
+
+  return data.result;
+};
+>>>>>>> Stashed changes
