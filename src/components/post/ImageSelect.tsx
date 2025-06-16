@@ -6,7 +6,7 @@ import React from 'react';
 import { Plus } from 'lucide-react';
 
 interface ImageSelectProps {
-  fileInputRef: React.RefObject<HTMLInputElement | null>;
+  fileInputRef: React.RefObject<HTMLInputElement>;
   onImageUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onSelect: (idx: number) => void;
   onAddImage: () => void;

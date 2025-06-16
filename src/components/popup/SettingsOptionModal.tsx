@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Portal from '../Portal';
 import BottomConfirmModal from './BottomConfirmModal'; // 공용 모달 가져오기
