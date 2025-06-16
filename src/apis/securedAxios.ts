@@ -12,10 +12,7 @@ securedAxios.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        await axiosInstance.post('/api/auth/refresh', null, {
-          withCredentials: true,
-        });
-
+        await axiosInstance.post('/api/auth/refresh', null);
         // 재요청
         return securedAxios(originalRequest);
       } catch (refreshError) {
