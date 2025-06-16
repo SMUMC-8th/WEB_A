@@ -2,13 +2,14 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchPostsByPlaceIds, Post } from '../apis/Post';
 import { Ellipsis, Heart, MessageCircle, MapPin } from 'lucide-react';
 import CommentModal from '../components/popup/CommentModal';
-import PostOptionsModal from '../components/popup/PostOptionsMoadl';
+import PostOptionsModal from '../components/popup/PostOptionsModal';
 import { useState } from 'react';
 
 const Feed = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPostOptionsOpen, setIsPostOptionsOpen] = useState(false);
   const [selectedPostId, setSelectedPostId] = useState<number | null>(null);
+  const [optionPosition, setOptionPosition] = useState<{ x: number; y: number } | null>(null);
 
   const placeIds = [1];
 
@@ -28,13 +29,21 @@ const Feed = () => {
   };
 
   const handleCloseComments = () => setIsModalOpen(false);
-  const handleOpenOptions = () => setIsPostOptionsOpen(true);
-  const handleCloseOptions = () => setIsPostOptionsOpen(false);
+
+  const handleOpenOptions = (e: React.MouseEvent, postId: number) => {
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    setOptionPosition({ x: rect.right, y: rect.bottom });
+    setSelectedPostId(postId);
+    setIsPostOptionsOpen(true);
+  };
+
+  const handleCloseOptions = () => {
+    setIsPostOptionsOpen(false);
+    setOptionPosition(null);
+  };
 
   if (isLoading) return <div className="pt-[100px]">로딩 중...</div>;
   if (error) return <div className="pt-[100px]">에러가 발생했습니다</div>;
-
-  console.log('posts', posts);
 
   if (!posts || posts.length === 0) {
     return <div className="pt-[100px] text-center text-gray-500">게시글이 없습니다.</div>;
@@ -54,12 +63,14 @@ const Feed = () => {
               <span className="font-bold text-sm">{post.nickname}</span>
               <span className="text-xs text-gray-500">{post.placeName}</span>
             </div>
-            <div className="ml-auto cursor-pointer" onClick={handleOpenOptions}>
+            <div
+              className="ml-auto cursor-pointer"
+              onClick={(e) => handleOpenOptions(e, post.postId)}
+            >
               <Ellipsis className="text-gray-500" />
             </div>
           </div>
 
-          {/* 이미지 또는 이미지 없음 텍스트 */}
           {post.postImageUrl.length > 0 ? (
             <img src={post.postImageUrl[0]} alt="Post" className="w-full h-auto object-cover" />
           ) : (
@@ -96,7 +107,9 @@ const Feed = () => {
         onClose={handleCloseComments}
         postId={selectedPostId ?? 1}
       />
-      <PostOptionsModal isOpen={isPostOptionsOpen} onClose={handleCloseOptions} />
+      {isPostOptionsOpen && optionPosition && (
+        <PostOptionsModal onClose={handleCloseOptions} position={optionPosition} />
+      )}
     </div>
   );
 };
