@@ -1,4 +1,3 @@
-// apis/Post.ts
 import axiosInstance from './axios';
 
 export interface Post {
@@ -228,9 +227,8 @@ export const mapPostToMapPost = (post: Post, lat: number, lng: number): MapPost 
 });
 
 import { Place } from '../types/Post';
-import axios from 'axios';
 
-// [1] 장소 ID 배열로 Place 정보 가져오기 (좌표 포함)
+// 장소 ID 배열로 Place 정보 가져오기 (좌표 포함)
 export const fetchPlacesByIds = async (placeIds: number[]): Promise<Place[]> => {
   const response = await axiosInstance.get<{ places: Place[] }>('/api/places', {
     params: { ids: placeIds.join(',') },
@@ -239,16 +237,14 @@ export const fetchPlacesByIds = async (placeIds: number[]): Promise<Place[]> => 
   return response.data.places;
 };
 
-// [2] 내 위치 기반 근처 게시물 가져오기 (로그인 필요)
 export const fetchNearbyPosts = async (
   latitude: number,
   longitude: number,
   radiusKm: number = 5,
 ) => {
-  // ✔️ 안전: localStorage에서 실시간으로 가져오기
   const token = localStorage.getItem('accessToken');
 
-  const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/api/posts/nearby`, {
+  const response = await axiosInstance.get('/api/posts/nearby', {
     headers: {
       Authorization: token ? `Bearer ${token}` : '',
     },
@@ -257,7 +253,7 @@ export const fetchNearbyPosts = async (
       longitude,
       radiusKm,
     },
-    withCredentials: true, // 쿠키 인증도 같이 필요하면 유지
+    withCredentials: true,
   });
 
   return response.data;
