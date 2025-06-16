@@ -16,7 +16,7 @@ const PostOptionModal = ({ onClose }: Props) => {
     <Portal>
       {/* 모달 배경 오버레이 (검은 배경 없이 투명하게 클릭 영역 확보) */}
       <div
-        className="fixed inset-0 z-[200]"
+        className="fixed inset-0 z-[9999] pointer-events-auto"
         onClick={onClose} // 배경 클릭 시 모달 닫힘
       >
         {/* 옵션 모달 본체 */}
