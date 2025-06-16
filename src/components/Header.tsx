@@ -1,9 +1,47 @@
 import { useEffect, useState } from 'react';
 import { Bell, Search, MapPin } from 'lucide-react';
 
+interface KakaoAddress {
+  address_name: string;
+  region_1depth_name: string;
+  region_2depth_name: string;
+  region_3depth_name: string;
+  region_3depth_h_name: string;
+  h_code: string;
+  b_code: string;
+  mountain_yn: string;
+  main_address_no: string;
+  sub_address_no: string;
+  x: string;
+  y: string;
+}
+
+interface KakaoGeocoderResult {
+  address: KakaoAddress;
+  road_address: null | {
+    address_name: string;
+    region_1depth_name: string;
+    region_2depth_name: string;
+    region_3depth_name: string;
+    road_name: string;
+    underground_yn: string;
+    main_building_no: string;
+    sub_building_no: string;
+    building_name: string;
+    zone_no: string;
+    x: string;
+    y: string;
+  };
+}
+
+declare global {
+  interface Window {
+    kakao: any;
+  }
+}
+
 export default function Header() {
   const [dongName, setDongName] = useState('로딩 중...');
-  const [showSearch, setShowSearch] = useState(false);
 
   useEffect(() => {
     const kakaoKey = import.meta.env.VITE_KAKAO_API;
@@ -13,10 +51,13 @@ export default function Header() {
       return;
     }
 
+    // SDK가 이미 로드되었는지 확인
     const existingScript = document.querySelector(`script[src*="dapi.kakao.com"]`);
     if (existingScript) {
+      // 이미 로드된 경우 maps.load만 호출
       loadKakaoMap();
     } else {
+      // SDK 동적 삽입
       const script = document.createElement('script');
       script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${kakaoKey}&autoload=false&libraries=services`;
       script.async = true;
@@ -34,20 +75,27 @@ export default function Header() {
         navigator.geolocation.getCurrentPosition(
           (position) => {
             const { latitude, longitude } = position.coords;
+
+            // ✅ SDK가 완전히 로드된 후에만 사용 가능
             const geocoder = new window.kakao.maps.services.Geocoder();
-            geocoder.coord2Address(longitude, latitude, (result, status) => {
-              if (status === window.kakao.maps.services.Status.OK) {
-                const address = result[0]?.address;
-                if (address?.region_3depth_name) {
-                  setDongName(address.region_3depth_name);
+
+            geocoder.coord2Address(
+              longitude,
+              latitude,
+              (result: KakaoGeocoderResult[], status: string) => {
+                if (status === window.kakao.maps.services.Status.OK) {
+                  const address = result[0]?.address;
+                  if (address?.region_3depth_name) {
+                    setDongName(address.region_3depth_name);
+                  } else {
+                    setDongName('주소 정보 없음');
+                  }
                 } else {
-                  setDongName('주소 정보 없음');
+                  console.warn('역지오코딩 실패:', status);
+                  setDongName('주소 조회 실패');
                 }
-              } else {
-                console.warn('역지오코딩 실패:', status);
-                setDongName('주소 조회 실패');
-              }
-            });
+              },
+            );
           },
           (error) => {
             console.error('위치 권한 오류:', error);
@@ -66,27 +114,10 @@ export default function Header() {
           <p className="text-xl font-bold text-[#3273FF]">{dongName}</p>
         </div>
         <div className="flex gap-[10px]">
-          <Search
-            className="text-gray-500 cursor-pointer"
-            onClick={() => setShowSearch(!showSearch)}
-          />
+          <Search className="text-gray-500" />
           <Bell className="text-gray-500" />
         </div>
       </div>
-
-      {/* 검색창 */}
-      {showSearch && (
-        <div className="absolute top-[100px] left-0 w-full px-4 z-40">
-          <div className="bg-white rounded-2xl shadow px-4 py-2 flex items-center max-w-xl mx-auto border border-gray-400">
-            <Search className="text-gray-400 mr-2" size={18} />
-            <input
-              type="text"
-              placeholder="장소명을 입력하세요"
-              className="bg-transparent outline-none text-sm w-full"
-            />
-          </div>
-        </div>
-      )}
     </header>
   );
 }
