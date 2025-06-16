@@ -95,6 +95,7 @@ export const usePost = (): UsePostReturn => {
 
         if (response.data.isSuccess) {
           onSuccess();
+          navigate('/map');
         } else {
           const serverError = validateServerResponse(response.data);
           if (serverError) {
