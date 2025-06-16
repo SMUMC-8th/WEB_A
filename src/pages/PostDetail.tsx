@@ -1,15 +1,11 @@
 // [PostDetail.tsx]
 // 게시물 상세 모달 페이지
 
-// import { postHide, postNoRecommend, postReport, postTagHide } from '../apis/postOption'; // ← API 함수 import
 import { motion, useDragControls, PanInfo } from 'framer-motion';
-import { MoreHorizontal, Heart, MessageCircle, Share, Bookmark, MapPinned } from 'lucide-react';
 import { MoreHorizontal, Heart, MessageCircle, Share, Bookmark, MapPinned } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import PostOptionModal from '../components/alert/PostOptionModal';
 import { Post } from '../types/Post';
-import profileImg from '../assets/profile.jpg';
-import OpenChatConfirmModal from '../components/alert/OpenChatConfirmModal';
 import profileImg from '../img/profile.jpg';
 import OpenChatConfirmModal from '../components/alert/OpenChatConfirmModal';
 
@@ -26,12 +22,13 @@ function PostDetail({ post, onClose }: Props) {
   const [showOptions, setShowOptions] = useState(false); // 점 세개 옵션 모달 상태
   const [modalState, setModalState] = useState<ModalState>('mid'); // 모달 상태 (초기값은 중간)
   const dragControls = useDragControls(); // 드래그 컨트롤러
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false); // 오픈채팅 확인 모달 상태
 
   // 모달이 열릴 때 네브바 숨김
   useEffect(() => {
     const navbar = document.querySelector('nav') as HTMLElement | null;
     if (navbar) {
-      navbar.classList.add('!hidden'); // Tailwind 우선순위 이김
+      navbar.classList.add('!hidden');
     }
     return () => {
       if (navbar) {
@@ -42,37 +39,30 @@ function PostDetail({ post, onClose }: Props) {
 
   // 드래그 종료 시 y 위치에 따라 모달 상태 전환
   const handleDragEnd = (_: PointerEvent, info: PanInfo) => {
-    const y = info.point.y; // 드래그 끝 위치의 y 좌표
+    const y = info.point.y;
 
-    // 아래로 많이 내리면 모달 닫기
     if (y > window.innerHeight * 0.6) {
       setModalState('closed');
-      onClose(); // 모달 닫기
-    }
-    // 위로 많이 올리면 전체 화면으로 확장
-    else if (y < window.innerHeight * 0.3) {
+      onClose();
+    } else if (y < window.innerHeight * 0.3) {
       setModalState('full');
-    }
-    // 그 외에는 중간 상태 유지
-    else {
+    } else {
       setModalState('mid');
     }
   };
 
-  // 모달 상태에 따라 y 위치 반환
   const getModalY = () => {
     switch (modalState) {
       case 'full':
-        return 0; // 전체 화면 = 상단까지 붙임
+        return 0;
       case 'mid':
-        return window.innerHeight * 0.2; // 아래에서 20% 만큼 보이도록
+        return window.innerHeight * 0.2;
       case 'closed':
       default:
-        return '100%'; // 완전히 숨김
+        return '100%';
     }
   };
 
-  // 모달 상태에 따른 높이 설정 (style.height에 적용됨)
   const getModalHeight = () => {
     switch (modalState) {
       case 'full':
@@ -84,46 +74,12 @@ function PostDetail({ post, onClose }: Props) {
     }
   };
 
-  // // postOptionModal 에서 선택된 옵션 값을 서버에 요청 보내고 성공 여부 확인
-  // const handleOptionSelect = async (option: 'hide' | 'no-recommend' | 'report' | 'tag-hide') => {
-  //   try {
-  //     switch (option) {
-  //       case 'hide':
-  //         await postHide(post.id);
-  //         alert('관심 없음 처리 완료');
-  //         break;
-  //       case 'no-recommend':
-  //         await postNoRecommend(post.authorId);
-  //         alert('사용자 추천 안 함 처리 완료');
-  //         break;
-  //       case 'report':
-  //         await postReport(post.id);
-  //         alert('신고 완료');
-  //         break;
-  //       case 'tag-hide':
-  //         await postTagHide(post.tags); // post.tags는 string[] 형태여야 함
-  //         alert('태그 관심 없음 처리 완료');
-  //         break;
-  //     }
-  //   } catch (error) {
-  //     alert('요청 실패: ' + (error as Error).message);
-  //   } finally {
-  //     setShowOptions(false); // 모달 닫기
-  //   }
-  // };
-
-  // 오픈채팅방 입장 확인 모달 상태
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-
-  // 오픈채팅방 입장 확인 모달 상태
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-
   return (
     <>
       {/* 배경 오버레이 */}
       <motion.div
         className="fixed inset-0 bg-black/30 z-20"
-        onClick={onClose} // 클릭 시 모달 닫힘
+        onClick={onClose}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -132,25 +88,22 @@ function PostDetail({ post, onClose }: Props) {
       {/* 상세 모달 본체 */}
       <motion.div
         className="fixed bottom-0 left-0 w-full bg-white rounded-t-2xl shadow-lg z-50 overflow-visible flex flex-col"
-        className="fixed bottom-0 left-0 w-full bg-white rounded-t-2xl shadow-lg z-50 overflow-visible flex flex-col"
-        drag="y" // 수직 드래그 활성화
-        dragConstraints={{ top: 0, bottom: 0 }} // 위/아래 드래그 제한
-        // drag는 기본적으로 자유롭게 움직이게 되어 있어서, 제한 걸어놓고 지정 위치로 animate만 수행하도록 제어
-
-        dragElastic={0.2} // 탄성 설정
-        onDragEnd={handleDragEnd} // 드래그 종료 시 호출
-        initial={{ y: '100%' }} // 처음엔 화면 밖에서 시작
-        animate={{ y: getModalY() }} // 상태에 따라 y 좌표 이동
-        exit={{ y: '100%' }} // 닫을 때 다시 아래로
-        transition={{ type: 'spring', stiffness: 300, damping: 30 }} // 스프링 애니메이션
+        drag="y"
+        dragConstraints={{ top: 0, bottom: 0 }}
+        dragElastic={0.2}
+        onDragEnd={handleDragEnd}
+        initial={{ y: '100%' }}
+        animate={{ y: getModalY() }}
+        exit={{ y: '100%' }}
+        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
         style={{
-          height: getModalHeight(), // 상태에 따라 높이 조절
+          height: getModalHeight(),
         }}
       >
-        {/* 드래그 핸들 -> 시각적으로 올릴 수 있게 함 */}
+        {/* 드래그 핸들 */}
         <div
           className="w-full h-6 flex justify-center items-center cursor-grab"
-          onPointerDown={(e) => dragControls.start(e)} // 포인터 누르면 드래그 시작
+          onPointerDown={(e) => dragControls.start(e)}
         >
           <div className="w-10 h-1.5 bg-gray-300 rounded-full mt-2" />
         </div>
@@ -158,24 +111,13 @@ function PostDetail({ post, onClose }: Props) {
         {/* 상단 작성자 정보 + 점 버튼 */}
         <div className="flex items-center justify-between px-4 pt-2">
           <div className="flex items-center gap-3">
-            {/* 프로필 */}
-            <img
-              src={profileImg}
-              alt="profile"
-              className="w-10 h-10 rounded-full bg-black object-cover"
-            />
             <img
               src={profileImg}
               alt="profile"
               className="w-10 h-10 rounded-full bg-black object-cover"
             />
             <div className="flex flex-col items-start gap-1 text-left">
-              {/* 작성자 */}
               <span className="text-base font-semibold">{post.author}</span>
-              <span className="text-base font-semibold">{post.author}</span>
-
-              {/* 장소 */}
-              <span className="text-sm text-gray-500">{post.title}</span>
               <span className="text-sm text-gray-500">{post.title}</span>
             </div>
           </div>
@@ -187,129 +129,78 @@ function PostDetail({ post, onClose }: Props) {
               setShowOptions(true);
             }}
           />
-          {/* 점 세개 옵션 모달 */}
-          {showOptions && <PostOptionModal onClose={() => setShowOptions(false)} />}
           {showOptions && <PostOptionModal onClose={() => setShowOptions(false)} />}
         </div>
 
-        {/* 게시물 이미지 (4:3 비율 고정) */}
-        <div className="relative w-full aspect-[3/4] bg-gray-100 mt-5 ">
-        {/* 게시물 이미지 (4:3 비율 고정) */}
-        <div className="relative w-full aspect-[3/4] bg-gray-100 mt-5 ">
+        {/* 게시물 이미지 */}
+        <div className="relative w-full aspect-[3/4] bg-gray-100 mt-5">
           <img
-            src={post.thumbnail || '/fallback.jpg'} // 비어 있으면 기본 이미지
-            src={post.thumbnail || '/fallback.jpg'} // 비어 있으면 기본 이미지
+            src={post.thumbnail || '/fallback.jpg'}
             alt={post.title}
             className="absolute top-0 left-0 w-full h-full object-cover"
           />
         </div>
 
-        {/* 댓글, 좋아요, 공유, 북마크 아이콘 */}
-        <div className="flex justify-between items-center px-4 py-3 text-base text-gray-500">
+        {/* 댓글, 좋아요, 공유, 북마크 */}
         <div className="flex justify-between items-center px-4 py-3 text-base text-gray-500">
           <div className="flex items-center gap-4">
-            {/* 댓글 */}
             <div className="flex items-center gap-1">
-              <MessageCircle className="w-5 h-5" />
               <MessageCircle className="w-5 h-5" />
               <span>{post.commentCount}</span>
             </div>
-
-            {/* 좋아요 */}
             <div className="flex items-center gap-1">
-              <Heart className="w-5 h-5" />
               <Heart className="w-5 h-5" />
               <span>{post.likes}</span>
             </div>
-
-            {/* 카카오 지도로 이동 */}
             <a
-              // 카카오맵 형식: https://map.kakao.com/link/map/장소명,위도,경도
               href={`https://map.kakao.com/link/map/${encodeURIComponent(post.title)},${post.lat},${
                 post.lng
               }`}
-              target="_blank" // 카카오맵 새 창으로 열림
-              rel="noopener noreferrer" // 보안 및 성능 향상용 설정?
+              target="_blank"
+              rel="noopener noreferrer"
               className="flex items-center gap-1 hover:underline"
             >
-              <MapPinned className="w-5 h-5" />
               <MapPinned className="w-5 h-5" />
               <span>{post.title}</span>
             </a>
           </div>
-
-          {/* 공유, 북마크 아이콘 */}
           <div className="flex items-center gap-4">
-            <Share className="w-5 h-5" />
-            <Bookmark className="w-5 h-5" />
             <Share className="w-5 h-5" />
             <Bookmark className="w-5 h-5" />
           </div>
         </div>
 
-        {/* 게시물 설명 및 해시태그 */}
+        {/* 설명 및 해시태그 */}
         <div className="px-4 pb-6 text-sm text-left mt-3">
-        <div className="px-4 pb-6 text-sm text-left mt-3">
-          {/* 설명 한 줄만 보이고 말 줄임표 적용 */}
           <div className="mb-1 w-full text-base text-gray-600 truncate">{post.description}</div>
-          <div className="mb-1 w-full text-base text-gray-600 truncate">{post.description}</div>
-          {/* 태그 */}
-          <div className="text-blue-600 font-semibold text-base break-words">
           <div className="text-blue-600 font-semibold text-base break-words">
             #성신여대 #성신여대맛집 #김치볶음밥 #스테이크
           </div>
         </div>
 
+        {/* 오픈채팅 버튼 */}
         <div className="flex justify-center mt-2">
-          {/* 오픈채팅 버튼 */}
-          {/* 오픈채팅 버튼 */}
           <button
             onClick={() => {
-              // 오픈채팅 URL이 있을 경우: 팝업으로 한번 더 묻기
               if (post.openChatUrl) {
-                setIsConfirmOpen(true); // 팝업 열기
+                setIsConfirmOpen(true);
               } else {
-                // 없으면 오픈채팅 생성 페이지로 이동
-                window.open('https://open.kakao.com/', '_blank', 'noopener,noreferrer');
-              }
-              // 오픈채팅 URL이 있을 경우: 팝업으로 한번 더 묻기
-              if (post.openChatUrl) {
-                setIsConfirmOpen(true); // 팝업 열기
-              } else {
-                // 없으면 오픈채팅 생성 페이지로 이동
                 window.open('https://open.kakao.com/', '_blank', 'noopener,noreferrer');
               }
             }}
             className="flex items-center gap-2 bg-white text-sm px-5 py-3 rounded-full shadow-md border border-gray-200 hover:shadow-lg transition"
-            className="flex items-center gap-2 bg-white text-sm px-5 py-3 rounded-full shadow-md border border-gray-200 hover:shadow-lg transition"
           >
-            {/* 아이콘 */}
             <MessageCircle className="w-5 h-5 text-blue-600" />
-            {/* 아이콘 */}
-            <MessageCircle className="w-5 h-5 text-blue-600" />
-
-            {/* 버튼 텍스트 */}
-            {/* 버튼 텍스트 */}
             <span className="text-gray-800 font-medium">
               {post.openChatUrl ? '오픈채팅방으로 이동' : '오픈채팅방 만들기'}
             </span>
           </button>
 
-          {/* 오픈채팅 확인 모달(openchat 링크가 있을 때 ) */}
           {isConfirmOpen && post.openChatUrl && (
             <OpenChatConfirmModal
-              placeName={post.title} // 예: '성신여대맛집'
-              openUrl={post.openChatUrl} // 실제 오픈채팅 링크
-              onClose={() => setIsConfirmOpen(false)} // 닫기
-            />
-          )}
-
-          {/* 오픈채팅 확인 모달(openchat 링크가 있을 때 ) */}
-          {isConfirmOpen && post.openChatUrl && (
-            <OpenChatConfirmModal
-              placeName={post.title} // 예: '성신여대맛집'
-              openUrl={post.openChatUrl} // 실제 오픈채팅 링크
-              onClose={() => setIsConfirmOpen(false)} // 닫기
+              placeName={post.title}
+              openUrl={post.openChatUrl}
+              onClose={() => setIsConfirmOpen(false)}
             />
           )}
         </div>
