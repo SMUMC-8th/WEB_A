@@ -9,11 +9,7 @@ import { Map as KakaoMap, CustomOverlayMap } from 'react-kakao-maps-sdk';
 import PostDetail from './PostDetail';
 import { AnimatePresence } from 'framer-motion';
 import { Post } from '../types/Post';
-<<<<<<< HEAD
-import Food from '../assets/food.jpg';
-=======
 import Food from '../img/food.jpg';
->>>>>>> main
 
 function Map() {
   const [myLocation, setMyLocation] = useState<{ lat: number; lng: number } | null>(null);
