@@ -45,6 +45,74 @@ interface CommentResponse {
     cursor: string;
   };
 }
+export interface ReplyComment {
+  commentId: number;
+  nickname: string;
+  profileUrl: string;
+  content: string;
+  likeCount: number;
+}
+
+interface ReplyResponse {
+  isSuccess: boolean;
+  code: string;
+  message: string;
+  result: {
+    comment: ReplyComment[];
+    hasNext: boolean;
+    pageSize: number;
+    cursor: string;
+  };
+}
+
+interface PostReplyResponse {
+  isSuccess: boolean;
+  code: string;
+  message: string;
+  result: {
+    commentId: number;
+    createdAt: string;
+  };
+}
+
+export const fetchRepliesByCommentId = async (
+  commentId: number,
+  cursor: string = '-1',
+  size: number = 10,
+): Promise<ReplyComment[]> => {
+  const response = await axiosInstance.get<ReplyResponse>(`/api/comments/${commentId}/replies`, {
+    params: {
+      cursor,
+      size,
+    },
+  });
+
+  if (response.data.isSuccess) {
+    return response.data.result.comment || [];
+  } else {
+    console.error('대댓글 조회 실패:', response.data);
+    throw new Error(response.data.message || '대댓글 조회 실패');
+  }
+};
+
+export const postReplyByCommentId = async (
+  commentId: number,
+  content: string,
+): Promise<PostReplyResponse> => {
+  const response = await axiosInstance.post<PostReplyResponse>(
+    `/api/comments/${commentId}/replies`,
+    {
+      content,
+    },
+  );
+
+  if (response.data.isSuccess) {
+    return response.data;
+  } else {
+    console.error('대댓글 작성 실패:', response.data);
+    throw new Error(response.data.message || '대댓글 작성 실패');
+  }
+};
 
 export const fetchPostsByPlaceIds = async (
   placeIds: number[],
