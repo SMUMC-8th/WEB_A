@@ -1,31 +1,45 @@
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import api from '../../apis/api'; // ← axiosInstance 가져오기
 
 export default function ProfilePhotoPage() {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const handleAddImage = () => {
-    fileInputRef.current?.click(); // input 열기
+    fileInputRef.current?.click();
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setSelectedFile(file); //  실제 파일 저장
+
       const reader = new FileReader();
       reader.onloadend = () => {
         const base64data = reader.result as string;
-        setPreviewUrl(base64data);
+        setPreviewUrl(base64data); // 미리보기용
       };
-      reader.readAsDataURL(file); // Base64로 변환
+      reader.readAsDataURL(file);
     }
   };
 
-  const handleConfirm = () => {
-    // 이후 업로드 로직 추가 가능
-    localStorage.setItem('profileImage', previewUrl || '');
-    navigate('/logincomplete'); // 또는 회원가입 완료 페이지
+  const handleConfirm = async () => {
+    if (!selectedFile) return;
+
+    const formData = new FormData();
+    formData.append('image', selectedFile); // key 이름은 Swagger 명세와 맞춰야 함
+
+    try {
+      await api.post('/api/members/profile-image', formData); // 쿠키 인증 포함된 요청
+      alert('프로필 사진 업로드 완료');
+      navigate('/logincomplete'); // 또는 메인 페이지 등
+    } catch (error) {
+      console.error('이미지 업로드 실패:', error);
+      alert('이미지 업로드 중 오류가 발생했습니다.');
+    }
   };
 
   return (
@@ -55,7 +69,6 @@ export default function ProfilePhotoPage() {
         ←
       </div>
 
-      {/* 타이틀 */}
       <h1
         style={{
           fontSize: '24px',
@@ -68,7 +81,6 @@ export default function ProfilePhotoPage() {
         <span style={{ color: '#297FB8' }}>프로필 사진</span> 설정
       </h1>
 
-      {/* 프로필 원형 영역 */}
       <div style={{ display: 'flex', justifyContent: 'center' }}>
         <div
           onClick={handleAddImage}
@@ -84,7 +96,6 @@ export default function ProfilePhotoPage() {
             cursor: 'pointer',
           }}
         >
-          {/* 카메라 아이콘 버튼 */}
           <button
             style={{
               position: 'absolute',
@@ -113,7 +124,6 @@ export default function ProfilePhotoPage() {
         </div>
       </div>
 
-      {/* 확인 버튼 */}
       <button
         onClick={handleConfirm}
         disabled={!previewUrl}

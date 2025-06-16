@@ -15,8 +15,9 @@ export default function MyPage() {
       try {
         const response = await axiosInstance.get('/api/members');
 
+        console.log('전체 응답:', response); //추가함
         const { data } = response;
-        console.log(' 사용자 정보 응답:', data);
+        console.log('profileUrl:', data?.result?.profileUrl);
 
         if (data.isSuccess && data.result) {
           const nickname = data.result.nickname || '이름 없음';
