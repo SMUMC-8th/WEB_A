@@ -5,7 +5,6 @@ import { motion, useDragControls, PanInfo } from 'framer-motion';
 import { MoreHorizontal, Heart, MessageCircle, Share, Bookmark, MapPinned } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import PostOptionModal from '../components/alert/PostOptionModal';
-import profileImg from '../img/profile.jpg';
 import OpenChatConfirmModal from '../components/alert/OpenChatConfirmModal';
 import { MapPost } from '../apis/Post';
 
@@ -112,13 +111,13 @@ function PostDetail({ post, onClose }: Props) {
         <div className="flex items-center justify-between px-4 pt-2">
           <div className="flex items-center gap-3">
             <img
-              src={profileImg}
+              src={post.postImageUrl[0]}
               alt="profile"
               className="w-10 h-10 rounded-full bg-black object-cover"
             />
             <div className="flex flex-col items-start gap-1 text-left">
-              <span className="text-base font-semibold">{post.author}</span>
-              <span className="text-sm text-gray-500">{post.title}</span>
+              <span className="text-base font-semibold">{post.nickname}</span>
+              <span className="text-sm text-gray-500">{post.placeName}</span>
             </div>
           </div>
 
@@ -135,8 +134,8 @@ function PostDetail({ post, onClose }: Props) {
         {/* 게시물 이미지 */}
         <div className="relative w-full aspect-[3/4] bg-gray-100 mt-5">
           <img
-            src={post.thumbnail || '/fallback.jpg'}
-            alt={post.title}
+            src={post.postImageUrl[0] || '/fallback.jpg'}
+            alt={post.placeName}
             className="absolute top-0 left-0 w-full h-full object-cover"
           />
         </div>
@@ -150,18 +149,16 @@ function PostDetail({ post, onClose }: Props) {
             </div>
             <div className="flex items-center gap-1">
               <Heart className="w-5 h-5" />
-              <span>{post.likes}</span>
+              <span>{post.likeCount}</span>
             </div>
             <a
-              href={`https://map.kakao.com/link/map/${encodeURIComponent(post.title)},${post.lat},${
-                post.lng
-              }`}
+              href={`https://map.kakao.com/link/map/${encodeURIComponent(post.placeName)}`}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-1 hover:underline"
             >
               <MapPinned className="w-5 h-5" />
-              <span>{post.title}</span>
+              <span>{post.placeName}</span>
             </a>
           </div>
           <div className="flex items-center gap-4">
@@ -172,7 +169,7 @@ function PostDetail({ post, onClose }: Props) {
 
         {/* 설명 및 해시태그 */}
         <div className="px-4 pb-6 text-sm text-left mt-3">
-          <div className="mb-1 w-full text-base text-gray-600 truncate">{post.description}</div>
+          <div className="mb-1 w-full text-base text-gray-600 truncate">{post.content}</div>
           <div className="text-blue-600 font-semibold text-base break-words">
             #성신여대 #성신여대맛집 #김치볶음밥 #스테이크
           </div>
@@ -182,24 +179,18 @@ function PostDetail({ post, onClose }: Props) {
         <div className="flex justify-center mt-2">
           <button
             onClick={() => {
-              if (post.openChatUrl) {
-                setIsConfirmOpen(true);
-              } else {
-                window.open('https://open.kakao.com/', '_blank', 'noopener,noreferrer');
-              }
+              window.open('https://open.kakao.com/', '_blank', 'noopener,noreferrer');
             }}
             className="flex items-center gap-2 bg-white text-sm px-5 py-3 rounded-full shadow-md border border-gray-200 hover:shadow-lg transition"
           >
             <MessageCircle className="w-5 h-5 text-blue-600" />
-            <span className="text-gray-800 font-medium">
-              {post.openChatUrl ? '오픈채팅방으로 이동' : '오픈채팅방 만들기'}
-            </span>
+            <span className="text-gray-800 font-medium">오픈채팅방 만들기</span>
           </button>
 
-          {isConfirmOpen && post.openChatUrl && (
+          {isConfirmOpen && (
             <OpenChatConfirmModal
-              placeName={post.title}
-              openUrl={post.openChatUrl}
+              placeName={post.placeName}
+              openUrl=""
               onClose={() => setIsConfirmOpen(false)}
             />
           )}
