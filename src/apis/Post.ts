@@ -193,6 +193,13 @@ export const deleteCommentById = async (commentId: number) => {
   return response.data;
 };
 
+// 댓글 좋아요
+export const likeCommentById = async (commentId: number) => {
+  // POST /comments/{commentId}/like 같은 엔드포인트를 호출
+  const response = await axiosInstance.post(`/api/comments/${commentId}/like`);
+  return response.data; // 좋아요 갯수 혹은 상태 리턴
+};
+
 export interface MapPost {
   nickname: string;
   profileUrl: string;
@@ -242,12 +249,7 @@ export const fetchNearbyPosts = async (
   longitude: number,
   radiusKm: number = 5,
 ) => {
-  const token = localStorage.getItem('accessToken');
-
-  const response = await axiosInstance.get('/api/posts/nearby', {
-    headers: {
-      Authorization: token ? `Bearer ${token}` : '',
-    },
+  const response = await axiosInstance.get('/api/places/posts/nearby', {
     params: {
       latitude,
       longitude,
