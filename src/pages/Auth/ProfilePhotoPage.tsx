@@ -46,7 +46,7 @@ export default function ProfilePhotoPage() {
       console.log('업로드 성공 응답:', response.data);
 
       alert('프로필 사진 업로드 완료');
-      navigate('/logincomplete');
+      navigate('/');
     } catch (error) {
       const axiosError = error as AxiosError<{ message?: string }>;
 

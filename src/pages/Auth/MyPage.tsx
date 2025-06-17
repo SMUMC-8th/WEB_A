@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { FaRegClipboard, FaClock, FaBookmark, FaHeart } from 'react-icons/fa';
 import { FiSearch, FiSettings } from 'react-icons/fi';
 import SettingsOptionModal from '../../components/popup/SettingsOptionModal';
@@ -6,11 +7,11 @@ import axiosInstance from '../../apis/axios';
 import { AxiosError } from 'axios';
 
 export default function MyPage() {
+  const navigate = useNavigate(); // 추가
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('');
   const [userNickname, setUserNickname] = useState('이름 없음');
   const [profileImage, setProfileImage] = useState('/images/default-profile.png');
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -29,38 +30,7 @@ export default function MyPage() {
   }, []);
 
   const handleAddImage = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const allowedTypes = ['image/jpeg', 'image/png'];
-    if (!allowedTypes.includes(file.type)) {
-      alert('JPEG 또는 PNG 형식의 이미지만 업로드 가능합니다.');
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append('file', file);
-
-    try {
-      const res = await axiosInstance.patch('/api/members/profile-image', formData);
-      if (res?.data?.isSuccess) {
-        alert('프로필 사진이 업데이트되었습니다.');
-        setProfileImage(URL.createObjectURL(file));
-      } else {
-        alert('업데이트 실패: 서버 응답 오류');
-      }
-    } catch (error) {
-      const axiosError = error as AxiosError<{ message?: string }>;
-      if (axiosError.response) {
-        alert(`업로드 실패: ${axiosError.response.data.message || '에러 발생'}`);
-      } else {
-        alert('네트워크 오류 또는 서버 문제입니다.');
-      }
-    }
+    navigate('/profilephoto'); // 이미지 클릭 시 페이지 이동
   };
 
   const renderTabContent = () => {
@@ -96,13 +66,6 @@ export default function MyPage() {
           >
             📷
           </button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleImageChange}
-            style={{ display: 'none' }}
-          />
         </div>
         <div className="text-lg font-semibold mt-1">{userNickname}</div>
       </div>
