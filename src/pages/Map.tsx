@@ -4,32 +4,48 @@ import { Map as KakaoMap, CustomOverlayMap } from 'react-kakao-maps-sdk';
 import PostDetail from './PostDetail';
 import { AnimatePresence } from 'framer-motion';
 import { LocateFixed } from 'lucide-react';
-
 import { fetchNearbyPosts, MapPost } from '../apis/Post';
 
 function Map() {
   const [myLocation, setMyLocation] = useState<{ lat: number; lng: number } | null>(null);
-  const [center, setCenter] = useState<{ lat: number; lng: number } | null>(null);
   const [mapPosts, setMapPosts] = useState<MapPost[]>([]);
   const [selectedPost, setSelectedPost] = useState<MapPost | null>(null);
   const [zoomLevel] = useState(4);
   const mapRef = useRef<HTMLDivElement | null>(null);
 
-  // 내 위치 가져오기 → 최초 center 설정
+  // 최초 위치 설정 - 상명대 서울 캠퍼스
+  const DEFAULT_CENTER = { lat: 37.6027, lng: 126.9554 };
+  const [center, setCenter] = useState<{ lat: number; lng: number }>(DEFAULT_CENTER);
+
+  // 최초 1회: getCurrentPosition
   useEffect(() => {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        setMyLocation(loc);
+        setCenter(loc); // 최초 1회만 즉시 center 설정
+      },
+      (err) => {
+        console.error('getCurrentPosition 실패:', err);
+      },
+      { enableHighAccuracy: true },
+    );
+
+    // 이후 추적: watchPosition
     const watchId = navigator.geolocation.watchPosition(
       (pos) => {
         const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
         setMyLocation(loc);
-        setCenter((prev) => prev ?? loc); // 최초 1회만
+        // 여기서는 center는 굳이 갱신 안 함 — 사용자가 직접 버튼으로 center 이동 가능
       },
-      (err) => console.error('위치 가져오기 실패:', err),
+      (err) => console.error('watchPosition 실패:', err),
       { enableHighAccuracy: true },
     );
+
     return () => navigator.geolocation.clearWatch(watchId);
   }, []);
 
-  // center 바뀌면 근처 게시물 불러오기
+  // center 바뀌면 근처 게시물 fetch
   useEffect(() => {
     if (!center) return;
     const fetch = async () => {
@@ -90,6 +106,7 @@ function Map() {
             .sort((a, b) => b.likeCount - a.likeCount)
             .map((post) => (
               <CustomOverlayMap
+                zIndex={post.likeCount} // 좋아요 수 크에 따라 높게 설정
                 key={post.postId}
                 position={{ lat: post.lat, lng: post.lng }}
                 yAnchor={1}
