@@ -72,6 +72,7 @@ export const PostWrite = () => {
         content: description,
       };
 
+      console.log('Post Content:', postContent); // 디버깅용 로그 추가
       formData.append('postContent', JSON.stringify(postContent));
 
       await submitPost(

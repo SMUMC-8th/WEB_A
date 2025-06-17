@@ -104,10 +104,14 @@ export const usePost = (): UsePostReturn => {
         }
       } catch (error) {
         console.error('게시물 제출 실패:', error);
-        if (axios.isAxiosError(error) && error.response?.status === 401) {
-          onError('로그인이 만료되었습니다. 다시 로그인해주세요.');
-        } else {
-          onError('게시물 제출에 실패했습니다. 다시 시도해주세요.');
+        if (axios.isAxiosError(error)) {
+          console.error('서버 응답:', error.response?.data);
+          if (error.response?.status === 401) {
+            onError('로그인이 만료되었습니다. 다시 로그인해주세요.');
+          } else {
+            const errorData = error.response?.data as { message?: string };
+            onError(errorData?.message || '게시물 제출에 실패했습니다. 다시 시도해주세요.');
+          }
         }
       }
     },
