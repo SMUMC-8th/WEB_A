@@ -1,10 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FaRegClipboard, FaClock, FaBookmark, FaHeart } from 'react-icons/fa';
 import { FiSearch, FiSettings } from 'react-icons/fi';
 import SettingsOptionModal from '../../components/popup/SettingsOptionModal';
 import axiosInstance from '../../apis/axios';
-import { AxiosError } from 'axios';
 
 export default function MyPage() {
   const navigate = useNavigate(); // 추가
