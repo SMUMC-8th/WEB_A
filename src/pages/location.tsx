@@ -25,6 +25,8 @@ export default function Location() {
     if (!isKakaoLoaded) return;
 
     const mapContainer = document.getElementById('map');
+    if (!mapContainer) return; // map container가 없으면 리턴
+
     const mapOption: kakao.maps.MapOptions = {
       center: new window.kakao.maps.LatLng(37.5665, 126.978), // 서울시청
       level: 3,
@@ -103,29 +105,34 @@ export default function Location() {
 
     try {
       const ps = new window.kakao.maps.services.Places();
-      ps.keywordSearch(query, (data: any, status: kakao.maps.services.Status) => {
-        if (status === window.kakao.maps.services.Status.OK) {
-          const results: Place[] = data.map((place: any) => ({
-            placeName: place.place_name,
-            address: place.address_name,
-            latitude: Number(place.y),
-            longitude: Number(place.x),
-          }));
-          setSearchResults(results);
-
-          if (results.length > 0 && map) {
-            const firstResult = results[0];
-            setSelectedPlace(firstResult);
-            const moveLatLng = new window.kakao.maps.LatLng(
-              firstResult.latitude,
-              firstResult.longitude,
+      ps.keywordSearch(
+        query,
+        (data: kakao.maps.services.PlacesSearchResult, status: kakao.maps.services.Status) => {
+          if (status === window.kakao.maps.services.Status.OK) {
+            const results: Place[] = data.map(
+              (place: kakao.maps.services.PlacesSearchResultItem) => ({
+                placeName: place.place_name,
+                address: place.address_name,
+                latitude: Number(place.y),
+                longitude: Number(place.x),
+              }),
             );
-            map.setCenter(moveLatLng);
-            map.setLevel(3);
-            createMarker(firstResult);
+            setSearchResults(results);
+
+            if (results.length > 0 && map) {
+              const firstResult = results[0];
+              setSelectedPlace(firstResult);
+              const moveLatLng = new window.kakao.maps.LatLng(
+                firstResult.latitude,
+                firstResult.longitude,
+              );
+              map.setCenter(moveLatLng);
+              map.setLevel(3);
+              createMarker(firstResult);
+            }
           }
-        }
-      });
+        },
+      );
     } catch (error) {
       console.error('장소 검색 중 오류 발생:', error);
     }
