@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Map as KakaoMap, CustomOverlayMap } from 'react-kakao-maps-sdk';
 
 import PostDetail from './PostDetail';
@@ -11,7 +11,6 @@ function Map() {
   const [mapPosts, setMapPosts] = useState<MapPost[]>([]);
   const [selectedPost, setSelectedPost] = useState<MapPost | null>(null);
   const [zoomLevel] = useState(4);
-  const mapRef = useRef<HTMLDivElement | null>(null);
 
   // 최초 위치 설정 - 상명대 서울 캠퍼스
   const DEFAULT_CENTER = { lat: 37.6027, lng: 126.9554 };
@@ -36,7 +35,6 @@ function Map() {
       (pos) => {
         const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
         setMyLocation(loc);
-        // 여기서는 center는 굳이 갱신 안 함 — 사용자가 직접 버튼으로 center 이동 가능
       },
       (err) => console.error('watchPosition 실패:', err),
       { enableHighAccuracy: true },
@@ -48,6 +46,7 @@ function Map() {
   // center 바뀌면 근처 게시물 fetch
   useEffect(() => {
     if (!center) return;
+
     const fetch = async () => {
       try {
         const res = await fetchNearbyPosts(center.lat, center.lng);
@@ -91,7 +90,6 @@ function Map() {
     <div className="w-full h-screen">
       {center && (
         <KakaoMap
-          ref={mapRef}
           center={center}
           level={zoomLevel}
           className="w-full h-full"
@@ -106,7 +104,7 @@ function Map() {
             .sort((a, b) => b.likeCount - a.likeCount)
             .map((post) => (
               <CustomOverlayMap
-                zIndex={post.likeCount} // 좋아요 수 크에 따라 높게 설정
+                zIndex={post.likeCount} // 좋아요 수 크기에 따라 높게 설정
                 key={post.postId}
                 position={{ lat: post.lat, lng: post.lng }}
                 yAnchor={1}
