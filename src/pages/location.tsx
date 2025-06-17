@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import useKakaoLoader from '../hooks/useKakaoLoader'; // 경로는 프로젝트 구조에 맞게
 
 interface Place {
   placeName: string;
@@ -11,24 +12,13 @@ interface Place {
 
 export default function Location() {
   const navigate = useNavigate();
+  const isKakaoLoaded = useKakaoLoader(); // ✅ 공통 훅 사용
+
   const [query, setQuery] = useState<string>('');
   const [searchResults, setSearchResults] = useState<Place[]>([]);
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
   const [map, setMap] = useState<kakao.maps.Map | null>(null);
-  const [isKakaoLoaded, setIsKakaoLoaded] = useState(false);
   const [marker, setMarker] = useState<kakao.maps.Marker | null>(null);
-
-  // 카카오맵 스크립트 로드 확인
-  useEffect(() => {
-    const checkKakaoLoaded = () => {
-      if (window.kakao && window.kakao.maps) {
-        setIsKakaoLoaded(true);
-      } else {
-        setTimeout(checkKakaoLoaded, 100);
-      }
-    };
-    checkKakaoLoaded();
-  }, []);
 
   // 지도 초기화
   useEffect(() => {
@@ -43,7 +33,6 @@ export default function Location() {
     const newMap = new window.kakao.maps.Map(mapContainer, mapOption);
     setMap(newMap);
 
-    // 현재 위치 가져오기
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const moveLatLng = new window.kakao.maps.LatLng(pos.coords.latitude, pos.coords.longitude);
@@ -59,27 +48,22 @@ export default function Location() {
   const createMarker = (place: Place) => {
     if (!isKakaoLoaded || !map) return;
 
-    // 기존 마커 제거
     if (marker) {
       marker.setMap(null);
     }
 
-    // 새 마커 생성
     const newMarker = new window.kakao.maps.Marker({
       position: new window.kakao.maps.LatLng(place.latitude, place.longitude),
       map: map,
     });
     setMarker(newMarker);
 
-    // 인포윈도우 내용 설정
     const content = `
       <div style="
         padding: 15px;
         width: 250px;
         background: white;
         border-radius: 10px;
-        box-shadow: none !important;
-        border: none !important;
       ">
         <div style="
           font-size: 16px;
@@ -95,7 +79,6 @@ export default function Location() {
       </div>
     `;
 
-    // 인포윈도우 생성 및 표시
     const newInfowindow = new window.kakao.maps.InfoWindow({
       content: content,
       removable: true,
@@ -130,7 +113,6 @@ export default function Location() {
           }));
           setSearchResults(results);
 
-          // 첫 번째 검색 결과로 지도 이동
           if (results.length > 0 && map) {
             const firstResult = results[0];
             setSelectedPlace(firstResult);
@@ -172,7 +154,6 @@ export default function Location() {
     setSearchResults([]);
     setQuery(place.placeName);
 
-    // 선택한 장소로 지도 이동
     if (map && isKakaoLoaded) {
       const moveLatLng = new window.kakao.maps.LatLng(place.latitude, place.longitude);
       map.setCenter(moveLatLng);
