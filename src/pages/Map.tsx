@@ -14,7 +14,7 @@ function Map() {
   const [zoomLevel] = useState(4);
   const mapRef = useRef<kakao.maps.Map | null>(null);
 
-  // 1️⃣ 내 위치 가져오기 → 최초 center 설정
+  //내 위치 가져오기 → 최초 center 설정
   useEffect(() => {
     const watchId = navigator.geolocation.watchPosition(
       (pos) => {
@@ -28,7 +28,7 @@ function Map() {
     return () => navigator.geolocation.clearWatch(watchId);
   }, []);
 
-  // 2️center 바뀌면 근처 게시물 불러오기
+  //center 바뀌면 근처 게시물 불러오기
   useEffect(() => {
     if (!center) return;
     const fetch = async () => {
@@ -118,19 +118,21 @@ function Map() {
         )}
       </AnimatePresence>
 
-      <button
-        onClick={() => {
-          if (myLocation && mapRef.current) {
-            const moveLatLon = new kakao.maps.LatLng(myLocation.lat, myLocation.lng);
-            mapRef.current.panTo(moveLatLon);
-            setCenter(myLocation);
-          }
-        }}
-        className="absolute bottom-24 right-4 z-50 w-12 h-12 flex items-center justify-center
-        bg-white/70 backdrop-blur-md border border-gray-300 rounded-full shadow-md hover:bg-white/90 transition"
-      >
-        <LocateFixed className="w-6 h-6 text-black" />
-      </button>
+      {!selectedPost && (
+        <button
+          onClick={() => {
+            if (myLocation && mapRef.current) {
+              const moveLatLon = new kakao.maps.LatLng(myLocation.lat, myLocation.lng);
+              mapRef.current.panTo(moveLatLon);
+              setCenter(myLocation);
+            }
+          }}
+          className="absolute bottom-24 right-4 z-50 w-12 h-12 flex items-center justify-center
+      bg-white/70 backdrop-blur-md border border-gray-300 rounded-full shadow-md hover:bg-white/90 transition"
+        >
+          <LocateFixed className="w-6 h-6 text-black" />
+        </button>
+      )}
     </div>
   );
 }

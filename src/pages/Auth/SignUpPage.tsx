@@ -38,14 +38,16 @@ export default function SignUpPage() {
 
   // 닉네임 중복 확인 함수
   const handleCheckNickname = async () => {
-    if (!nickname) return;
+    const trimmed = nickname.trim();
+    if (!trimmed || trimmed.length < 2 || trimmed.length > 8) return;
+
     try {
-      const res = await SignupAPI.checkNickname(nickname);
+      const res = await SignupAPI.checkNickname(trimmed);
       console.log('닉네임 중복 확인 API 응답:', res);
 
       setIsChecked(true);
 
-      if (res == '사용가능한 닉네임 입니다.') {
+      if (res === '사용가능한 닉네임 입니다.') {
         setIsAvailable(true);
       } else {
         setIsAvailable(false);

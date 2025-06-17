@@ -9,64 +9,14 @@ interface Place {
   longitude: number;
 }
 
-// 카카오맵 타입 선언
-declare global {
-  interface Window {
-    kakao: {
-      maps: {
-        Map: new (
-          container: HTMLElement,
-          options: { center: { getLat: () => number; getLng: () => number }; level: number },
-        ) => {
-          setCenter: (latlng: { getLat: () => number; getLng: () => number }) => void;
-          setLevel: (level: number) => void;
-        };
-        LatLng: new (lat: number, lng: number) => { getLat: () => number; getLng: () => number };
-        Marker: new (options: {
-          position: { getLat: () => number; getLng: () => number };
-          map: any;
-        }) => {
-          setMap: (map: any) => void;
-        };
-        InfoWindow: new (options: {
-          content: string;
-          removable: boolean;
-          zIndex: number;
-          position: { getLat: () => number; getLng: () => number };
-          maxWidth: number;
-          pixelOffset: { x: number; y: number };
-        }) => {
-          open: (map: any, marker: any) => void;
-        };
-        Point: new (x: number, y: number) => { x: number; y: number };
-        services: {
-          Status: { OK: string };
-          Places: new () => {
-            keywordSearch: (
-              keyword: string,
-              callback: (
-                data: Array<{ place_name: string; address_name: string; x: string; y: string }>,
-                status: string,
-              ) => void,
-            ) => void;
-          };
-        };
-      };
-    };
-  }
-}
-
 export default function Location() {
   const navigate = useNavigate();
   const [query, setQuery] = useState<string>('');
   const [searchResults, setSearchResults] = useState<Place[]>([]);
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
-  const [map, setMap] = useState<{
-    setCenter: (latlng: { getLat: () => number; getLng: () => number }) => void;
-    setLevel: (level: number) => void;
-  } | null>(null);
+  const [map, setMap] = useState<kakao.maps.Map | null>(null);
   const [isKakaoLoaded, setIsKakaoLoaded] = useState(false);
-  const [marker, setMarker] = useState<{ setMap: (map: any) => void } | null>(null);
+  const [marker, setMarker] = useState<kakao.maps.Marker | null>(null);
 
   // 카카오맵 스크립트 로드 확인
   useEffect(() => {
@@ -85,7 +35,7 @@ export default function Location() {
     if (!isKakaoLoaded) return;
 
     const mapContainer = document.getElementById('map');
-    const mapOption = {
+    const mapOption: kakao.maps.MapOptions = {
       center: new window.kakao.maps.LatLng(37.5665, 126.978), // 서울시청
       level: 3,
     };
@@ -130,7 +80,6 @@ export default function Location() {
         border-radius: 10px;
         box-shadow: none !important;
         border: none !important;
-        
       ">
         <div style="
           font-size: 16px;
@@ -171,9 +120,9 @@ export default function Location() {
 
     try {
       const ps = new window.kakao.maps.services.Places();
-      ps.keywordSearch(query, (data: any, status: any) => {
+      ps.keywordSearch(query, (data: any, status: kakao.maps.services.Status) => {
         if (status === window.kakao.maps.services.Status.OK) {
-          const results = data.map((place: any) => ({
+          const results: Place[] = data.map((place: any) => ({
             placeName: place.place_name,
             address: place.address_name,
             latitude: Number(place.y),
@@ -261,7 +210,6 @@ export default function Location() {
           />
         </form>
 
-        {/* 검색 결과 목록 */}
         {searchResults.length > 0 && (
           <div className="mt-2 bg-white rounded-lg shadow-lg max-h-[300px] overflow-y-auto">
             {searchResults.map((result, index) => (

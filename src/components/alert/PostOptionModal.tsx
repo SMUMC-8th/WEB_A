@@ -20,7 +20,7 @@ const PostOptionModal = ({ onClose }: Props) => {
       >
         {/* 옵션 모달 본체 */}
         <div
-          className="absolute right-4 top-12 w-[220px] bg-white rounded-xl shadow-lg border border-gray-200"
+          className="absolute right-4 top-20 w-[220px] bg-white rounded-xl shadow-lg border border-gray-200"
           onClick={(e) => e.stopPropagation()} // 모달 내부 클릭 시 닫힘 방지
         >
           {/* 옵션 버튼 목록 */}
