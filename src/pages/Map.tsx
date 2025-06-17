@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Map as KakaoMap, CustomOverlayMap } from 'react-kakao-maps-sdk';
+
 import PostDetail from './PostDetail';
 import { AnimatePresence } from 'framer-motion';
 import { LocateFixed } from 'lucide-react';
@@ -12,9 +13,9 @@ function Map() {
   const [mapPosts, setMapPosts] = useState<MapPost[]>([]);
   const [selectedPost, setSelectedPost] = useState<MapPost | null>(null);
   const [zoomLevel] = useState(4);
-  const mapRef = useRef<kakao.maps.Map | null>(null);
+  const mapRef = useRef<HTMLDivElement | null>(null);
 
-  //내 위치 가져오기 → 최초 center 설정
+  // 내 위치 가져오기 → 최초 center 설정
   useEffect(() => {
     const watchId = navigator.geolocation.watchPosition(
       (pos) => {
@@ -28,7 +29,7 @@ function Map() {
     return () => navigator.geolocation.clearWatch(watchId);
   }, []);
 
-  //center 바뀌면 근처 게시물 불러오기
+  // center 바뀌면 근처 게시물 불러오기
   useEffect(() => {
     if (!center) return;
     const fetch = async () => {
@@ -121,9 +122,7 @@ function Map() {
       {!selectedPost && (
         <button
           onClick={() => {
-            if (myLocation && mapRef.current) {
-              const moveLatLon = new kakao.maps.LatLng(myLocation.lat, myLocation.lng);
-              mapRef.current.panTo(moveLatLon);
+            if (myLocation) {
               setCenter(myLocation);
             }
           }}
